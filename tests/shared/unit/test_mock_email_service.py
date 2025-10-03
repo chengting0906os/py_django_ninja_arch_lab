@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from src.shared.service.mock_email_service import MockEmailService
+from src.platform.service.mock_email_service import MockEmailService
 
 
 class TestMockEmailService:

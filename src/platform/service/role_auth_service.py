@@ -2,9 +2,9 @@
 
 from fastapi import Depends
 
-from src.shared.exception.exceptions import ForbiddenError
-from src.shared.logging.loguru_io import Logger
-from src.shared.service.jwt_auth_service import current_active_user
+from src.platform.exception.exceptions import ForbiddenError
+from src.platform.logging.loguru_io import Logger
+from src.platform.service.jwt_auth_service import current_active_user
 from src.user.domain.user_entity import UserRole
 from src.user.domain.user_model import User
 

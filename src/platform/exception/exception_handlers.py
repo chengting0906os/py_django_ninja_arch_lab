@@ -4,8 +4,8 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from fastapi_users import exceptions as fastapi_users_exceptions
 
-from src.shared.exception.exceptions import DomainError
-from src.shared.logging.loguru_io_config import custom_logger
+from src.platform.exception.exceptions import DomainError
+from src.platform.logging.loguru_io_config import custom_logger
 
 
 async def domain_error_handler(request: Request, exc: DomainError) -> JSONResponse:

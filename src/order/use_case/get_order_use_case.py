@@ -3,9 +3,9 @@
 from fastapi import Depends
 
 from src.order.domain.order_entity import Order
-from src.shared.exception.exceptions import NotFoundError
-from src.shared.logging.loguru_io import Logger
-from src.shared.service.unit_of_work import AbstractUnitOfWork, get_unit_of_work
+from src.platform.exception.exceptions import NotFoundError
+from src.platform.logging.loguru_io import Logger
+from src.platform.service.unit_of_work import AbstractUnitOfWork, get_unit_of_work
 
 
 class GetOrderUseCase:

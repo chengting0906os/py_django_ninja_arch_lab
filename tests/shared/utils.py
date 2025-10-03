@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from fastapi.testclient import TestClient
 
-from src.shared.constant.route_constant import AUTH_LOGIN
+from src.platform.constant.route_constant import AUTH_LOGIN
 
 
 def extract_table_data(step) -> Dict[str, Any]:
@@ -41,7 +41,7 @@ def create_user(
     client: TestClient, email: str, password: str, name: str, role: str
 ) -> Dict[str, Any] | None:
     """Helper function to create a user. Returns None if user already exists."""
-    from src.shared.constant.route_constant import USER_CREATE
+    from src.platform.constant.route_constant import USER_CREATE
 
     user_data = {
         'email': email,
@@ -63,7 +63,7 @@ def create_product(
     client: TestClient, name: str, description: str, price: int, is_active: bool = True
 ) -> Dict[str, Any]:
     """Helper function to create a product."""
-    from src.shared.constant.route_constant import PRODUCT_BASE
+    from src.platform.constant.route_constant import PRODUCT_BASE
 
     product_data = {
         'name': name,

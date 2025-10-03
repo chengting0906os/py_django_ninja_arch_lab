@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.shared.logging.loguru_io import Logger
+from src.platform.logging.loguru_io import Logger
 from src.user.domain.user_model import User
 from src.user.domain.user_repo import UserRepo
 

@@ -6,8 +6,8 @@ from typing import Optional
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, IntegerIDMixin
 
-from src.shared.config.core_setting import settings
-from src.shared.logging.loguru_io import Logger
+from src.platform.config.core_setting import settings
+from src.platform.logging.loguru_io import Logger
 from src.user.domain.user_model import User
 from src.user.infra.get_user_db import get_user_db
 

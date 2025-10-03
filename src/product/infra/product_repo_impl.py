@@ -5,11 +5,11 @@ from typing import List, Optional
 from sqlalchemy import delete as sql_delete, select, update as sql_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.platform.exception.exceptions import DomainError
+from src.platform.logging.loguru_io import Logger
 from src.product.domain.product_entity import Product, ProductStatus
 from src.product.domain.product_repo import ProductRepo
 from src.product.infra.product_model import ProductModel
-from src.shared.exception.exceptions import DomainError
-from src.shared.logging.loguru_io import Logger
 from src.user.domain.user_model import User
 
 

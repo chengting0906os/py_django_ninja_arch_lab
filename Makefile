@@ -1,5 +1,5 @@
 # Database migrations
-ALEMBIC_CONFIG = src/shared/alembic/alembic.ini
+ALEMBIC_CONFIG = src/platform/alembic/alembic.ini
 
 .PHONY: migrate-up mu
 migrate-up mu:

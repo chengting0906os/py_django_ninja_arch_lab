@@ -10,8 +10,8 @@ from sqlalchemy.orm import selectinload
 from src.order.domain.order_entity import Order, OrderStatus
 from src.order.domain.order_repo import OrderRepo
 from src.order.infra.order_model import OrderModel
-from src.shared.exception.exceptions import DomainError, ForbiddenError, NotFoundError
-from src.shared.logging.loguru_io import Logger
+from src.platform.exception.exceptions import DomainError, ForbiddenError, NotFoundError
+from src.platform.logging.loguru_io import Logger
 
 
 class OrderRepoImpl(OrderRepo):

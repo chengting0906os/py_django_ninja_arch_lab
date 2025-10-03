@@ -6,8 +6,8 @@ from src.order.domain.events import (
     OrderCreatedEvent,
     OrderPaidEvent,
 )
-from src.shared.logging.loguru_io import Logger
-from src.shared.service.mock_email_service import MockEmailService
+from src.platform.logging.loguru_io import Logger
+from src.platform.service.mock_email_service import MockEmailService
 
 
 class MockSendEmailUseCase:

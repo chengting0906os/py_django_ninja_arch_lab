@@ -1,6 +1,6 @@
 from pytest_bdd import then
 
-from src.shared.constant.route_constant import PRODUCT_GET
+from src.platform.constant.route_constant import PRODUCT_GET
 from tests.shared.utils import extract_table_data
 
 

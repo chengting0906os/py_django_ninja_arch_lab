@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from src.shared.logging.loguru_io import Logger
+from src.platform.logging.loguru_io import Logger
 
 
 class MockEmailService:

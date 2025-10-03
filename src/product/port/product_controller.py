@@ -4,6 +4,9 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, status
 
+from src.platform.exception.exceptions import NotFoundError
+from src.platform.logging.loguru_io import Logger
+from src.platform.service.role_auth_service import require_seller
 from src.product.port.product_schema import (
     ProductCreateRequest,
     ProductResponse,
@@ -16,9 +19,6 @@ from src.product.use_case.product_use_case import (
     ListProductsUseCase,
     UpdateProductUseCase,
 )
-from src.shared.exception.exceptions import NotFoundError
-from src.shared.logging.loguru_io import Logger
-from src.shared.service.role_auth_service import require_seller
 from src.user.domain.user_model import User
 
 

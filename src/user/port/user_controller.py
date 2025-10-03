@@ -3,9 +3,9 @@
 from fastapi import APIRouter, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.shared.exception.exceptions import DomainError
-from src.shared.logging.loguru_io import Logger
-from src.shared.service.jwt_auth_service import auth_backend, fastapi_users
+from src.platform.exception.exceptions import DomainError
+from src.platform.logging.loguru_io import Logger
+from src.platform.service.jwt_auth_service import auth_backend, fastapi_users
 from src.user.domain.user_entity import UserRole
 from src.user.port.user_schema import UserCreate, UserPublic, UserRead, UserUpdate
 from src.user.use_case.manager import get_user_manager
