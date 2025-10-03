@@ -7,12 +7,11 @@ repos:
         args:
           - --fix
       - id: ruff-format
-  
-  - repo: local
+
+  - repo: https://github.com/facebook/pyrefly-pre-commit
+    rev: 0.0.1
     hooks:
-      - id: pyright
-        name: pyright
-        entry: .venv/bin/pyright
-        language: system
-        types: [python]
-        pass_filenames: false
+      - id: pyrefly-typecheck-system
+        name: Pyrefly (type checking)
+        entry: .venv/bin/pyrefly
+        args: ["check"]

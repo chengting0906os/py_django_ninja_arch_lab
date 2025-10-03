@@ -58,9 +58,11 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         await super().__aexit__(*args)
         await self.session.close()
 
+    # pyrefly: ignore  # bad-override
     async def _commit(self):
         await self.session.commit()
 
+    # pyrefly: ignore  # bad-override
     async def rollback(self):
         await self.session.rollback()
 

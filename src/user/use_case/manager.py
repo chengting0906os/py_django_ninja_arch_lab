@@ -17,6 +17,7 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     verification_token_secret = settings.VERIFICATION_TOKEN_SECRET.get_secret_value()
 
     @Logger.io
+    # pyrefly: ignore  # bad-override
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         """Hook called after successful user registration.
 
@@ -28,11 +29,13 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         """
         pass
 
+    # pyrefly: ignore  # bad-override
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
     ):
         pass
 
+    # pyrefly: ignore  # bad-override
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
     ):

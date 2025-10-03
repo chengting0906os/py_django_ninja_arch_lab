@@ -35,6 +35,7 @@ class JWTAuthService:
         )
 
     async def create_session(self, user: User) -> str:
+        # pyrefly: ignore  # bad-argument-type
         token = await self.jwt_strategy.write_token(user)
         return token
 

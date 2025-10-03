@@ -84,6 +84,7 @@ class InterceptHandler(logging.Handler):
 
         # Find caller from where originated the logged message
         frame, depth = logging.currentframe(), 2
+        # pyrefly: ignore  # bad-assignment
         while frame and frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1

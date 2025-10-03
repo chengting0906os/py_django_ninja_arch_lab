@@ -16,7 +16,9 @@ auth_router = APIRouter()
 users_router = APIRouter()
 users_router.include_router(
     fastapi_users.get_users_router(
+        # pyrefly: ignore  # bad-argument-type
         UserRead,
+        # pyrefly: ignore  # bad-argument-type
         UserUpdate,
     ),
 )
@@ -58,6 +60,7 @@ async def register_user(
     user_create: UserCreate,
     user_manager=Depends(get_user_manager),
 ):
+    # pyrefly: ignore  # not-iterable
     valid_roles = [role.value for role in UserRole]
     if user_create.role not in valid_roles:
         raise DomainError(

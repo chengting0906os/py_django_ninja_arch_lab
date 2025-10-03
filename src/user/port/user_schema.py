@@ -5,6 +5,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class UserRead(schemas.BaseUser[int]):
+    # pyrefly: ignore  # bad-override
     id: int
     name: str
     email: EmailStr

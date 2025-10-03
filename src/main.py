@@ -27,6 +27,7 @@ app = FastAPI(
 )
 
 app.add_middleware(
+    # pyrefly: ignore  # bad-argument-type
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
