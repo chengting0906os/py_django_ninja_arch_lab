@@ -12,9 +12,9 @@ from src.platform.config.db_setting import get_async_session
 
 
 if TYPE_CHECKING:
-    from src.order.domain.order_repo import OrderRepo
-    from src.product.domain.product_repo import ProductRepo
-    from src.user.domain.user_repo import UserRepo
+    from src.domain.order.order_repo import OrderRepo
+    from src.domain.product.product_repo import ProductRepo
+    from src.domain.user.user_repo import UserRepo
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -45,9 +45,9 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         self.session = session
 
     async def __aenter__(self):
-        from src.order.infra.order_repo_impl import OrderRepoImpl
-        from src.product.infra.product_repo_impl import ProductRepoImpl
-        from src.user.infra.user_repo_impl import UserRepoImpl
+        from src.driven_adapter.order.order_repo_impl import OrderRepoImpl
+        from src.driven_adapter.product.product_repo_impl import ProductRepoImpl
+        from src.driven_adapter.user.user_repo_impl import UserRepoImpl
 
         self.products = ProductRepoImpl(self.session)
         self.orders = OrderRepoImpl(self.session)

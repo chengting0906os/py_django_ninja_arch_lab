@@ -8,8 +8,8 @@ from fastapi_users.authentication import (
 )
 
 from src.platform.config.core_setting import settings
-from src.user.domain.user_model import User
-from src.user.use_case.manager import get_user_manager
+from src.domain.user.user_model import User
+from src.app.user.manager import get_user_manager
 
 
 class JWTAuthService:
