@@ -46,6 +46,11 @@ class InterceptHandler(logging.Handler):
         # Skip access logs or adjust level based on status code
         message = record.getMessage()
 
+        if (message.startswith('format ') and '->' in message) or (
+            'Using selector: KqueueSelector' in message
+        ):
+            return
+
         # Parse HTTP status code from uvicorn access logs
         if 'HTTP/1.1' in message:
             # Extract status code from message like "GET /api/... HTTP/1.1" 404"
@@ -144,7 +149,7 @@ custom_logger.add(sys.stdout, format=io_log_format)
 
 # Add file output with daily rotation and compression
 custom_logger.add(
-    LOG_DIR / f"{os.environ.get('LOG_FILE_PREFIX', '')}{{time:YYYY-MM-DD_HH}}.log",
+    LOG_DIR / f'{os.environ.get("LOG_FILE_PREFIX", "")}{{time:YYYY-MM-DD_HH}}.log',
     format=io_log_format,
     rotation='1 day',
     retention='14 days',

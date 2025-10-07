@@ -4,8 +4,14 @@ repos:
     rev: v0.11.9
     hooks:
       - id: ruff
+        name: ruff-fix
         args:
           - --fix
+      - id: ruff
+        name: ruff-check
+        args:
+          - .
+        pass_filenames: false
       - id: ruff-format
 
   - repo: https://github.com/facebook/pyrefly-pre-commit
