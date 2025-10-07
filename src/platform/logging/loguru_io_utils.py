@@ -1,5 +1,3 @@
-"""Utility functions for LoguruIO."""
-
 from inspect import FullArgSpec, getfile, getfullargspec, getsourcelines
 from os.path import basename
 from re import sub
@@ -20,7 +18,8 @@ def handle_yield(yield_method: Optional[GeneratorMethod] = None) -> str:
 
 
 def get_chain_start_time() -> float:
-    if not (start_time := chain_start_time_var.get()):
+    start_time = chain_start_time_var.get()
+    if not start_time:
         start_time = time()
         chain_start_time_var.set(start_time)
     return start_time
@@ -77,8 +76,7 @@ def normalize_args_kwargs(
 def mask_sensitive(data_str: Any) -> Any:
     try:
         data_str_ = str(data_str)
-        new_data_str = sub(
-            rf"""(\(|,\s)({'|'.join(SENSITIVE_KEYWORDS)})=\S+(\)|,\s)""",
+        new_data_str = sub(  # type: ignore
             r"\1\2='********'\3",
             data_str_,
         )
@@ -89,3 +87,14 @@ def mask_sensitive(data_str: Any) -> Any:
 
 def should_mask_keyword(keyword: Any, value: Any) -> Any:
     return '********' if keyword in SENSITIVE_KEYWORDS else value
+
+
+def truncate_content(data: Any, max_words: int = 100) -> Any:
+    data_str = str(data)
+    words = data_str.split()
+
+    if len(words) <= max_words:
+        return data
+
+    truncated = ' '.join(words[:max_words]) + '...'
+    return truncated if isinstance(data, str) else f'{type(data).__name__}({truncated})'
