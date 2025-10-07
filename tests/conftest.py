@@ -11,39 +11,41 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 
-# Override POSTGRES_DB environment variable to use a dedicated test database
-os.environ['POSTGRES_DB'] = 'shopping_test_db'
-
-from src.main import app
-from tests.order.functional.fixtures import *  # noqa: F403
-from tests.order.functional.given import *  # noqa: F403
-from tests.order.functional.then import *  # noqa: F403
-from tests.order.functional.when import *  # noqa: F403
-from tests.product.functional.fixtures import *  # noqa: F403
-from tests.product.functional.given import *  # noqa: F403
-from tests.product.functional.then import *  # noqa: F403
-from tests.product.functional.when import *  # noqa: F403
-from tests.pytest_bdd_ng_example.fixtures import *  # noqa: F403
-from tests.pytest_bdd_ng_example.given import *  # noqa: F403
-from tests.pytest_bdd_ng_example.then import *  # noqa: F403
-from tests.pytest_bdd_ng_example.when import *  # noqa: F403
-from tests.shared.given import *  # noqa: F403
-from tests.shared.then import *  # noqa: F403
-from tests.user.functional.fixtures import *  # noqa: F403
-from tests.user.functional.then import *  # noqa: F403
-from tests.user.functional.when import *  # noqa: F403
-
-
 # Load environment variables from .env or .env.example
 env_file = '.env' if Path('.env').exists() else '.env.example'
 load_dotenv(env_file)
+
+BASE_TEST_DB = os.getenv('POSTGRES_DB', 'shopping_test_db')
+WORKER_ID = os.getenv('PYTEST_XDIST_WORKER')
+TEST_DB_NAME = f'{BASE_TEST_DB}_{WORKER_ID}' if WORKER_ID else BASE_TEST_DB
+os.environ['POSTGRES_DB'] = TEST_DB_NAME
+
+from src.main import app  # noqa: F403, E402
+from tests.order.functional.fixtures import *  # noqa: F403, E402, E402
+from tests.order.functional.given import *  # noqa: F403, E402
+from tests.order.functional.then import *  # noqa: F403, E402
+from tests.order.functional.when import *  # noqa: F403, E402
+from tests.product.functional.fixtures import *  # noqa: F403, E402
+from tests.product.functional.given import *  # noqa: F403, E402
+from tests.product.functional.then import *  # noqa: F403, E402
+from tests.product.functional.when import *  # noqa: F403, E402
+from tests.pytest_bdd_ng_example.fixtures import *  # noqa: F403, E402
+from tests.pytest_bdd_ng_example.given import *  # noqa: F403, E402
+from tests.pytest_bdd_ng_example.then import *  # noqa: F403, E402
+from tests.pytest_bdd_ng_example.when import *  # noqa: F403, E402
+from tests.shared.given import *  # noqa: F403, E402
+from tests.shared.then import *  # noqa: F403, E402
+from tests.user.functional.fixtures import *  # noqa: F403, E402
+from tests.user.functional.then import *  # noqa: F403, E402
+from tests.user.functional.when import *  # noqa: F403, E402
+
 
 DB_CONFIG = {
     'user': os.getenv('POSTGRES_USER'),
     'password': os.getenv('POSTGRES_PASSWORD'),
     'host': os.getenv('POSTGRES_SERVER'),
     'port': os.getenv('POSTGRES_PORT'),
-    'test_db': 'shopping_test_db',
+    'test_db': TEST_DB_NAME,
 }
 TEST_DATABASE_URL = f'postgresql+asyncpg://{DB_CONFIG["user"]}:{DB_CONFIG["password"]}@{DB_CONFIG["host"]}:{DB_CONFIG["port"]}/{DB_CONFIG["test_db"]}'
 

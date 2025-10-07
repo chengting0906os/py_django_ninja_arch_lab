@@ -30,8 +30,12 @@ migrate-current mc:
 	@uv run alembic -c $(ALEMBIC_CONFIG) current
 
 # Testing
-.PHONY: test t
-test t:
+.PHONY: test t mt
+test t mt:
+	@uv run pytest tests/ -v -n 12
+
+.PHONY: test-serial ts
+test-serial ts:
 	@uv run pytest tests/ -v
 
 .PHONY: test-api

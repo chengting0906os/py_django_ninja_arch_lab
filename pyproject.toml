@@ -25,6 +25,7 @@ dependencies = [
 dev = [
     "pyright",
     "pytest",
+    "pytest-xdist",
     "pytest-asyncio",
     "httpx",
     "ruff",
