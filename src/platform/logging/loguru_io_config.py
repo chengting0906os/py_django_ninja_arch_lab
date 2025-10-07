@@ -3,6 +3,7 @@
 from contextvars import ContextVar
 from enum import StrEnum
 import logging
+import os
 import sys
 
 from loguru import logger as loguru_logger
@@ -143,7 +144,7 @@ custom_logger.add(sys.stdout, format=io_log_format)
 
 # Add file output with daily rotation and compression
 custom_logger.add(
-    f'{LOG_DIR}/{{time:YYYY-MM-DD_HH}}.log',
+    LOG_DIR / f"{os.environ.get('LOG_FILE_PREFIX', '')}{{time:YYYY-MM-DD_HH}}.log",
     format=io_log_format,
     rotation='1 day',
     retention='14 days',

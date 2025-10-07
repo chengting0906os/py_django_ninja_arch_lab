@@ -20,6 +20,11 @@ WORKER_ID = os.getenv('PYTEST_XDIST_WORKER')
 TEST_DB_NAME = f'{BASE_TEST_DB}_{WORKER_ID}' if WORKER_ID else BASE_TEST_DB
 os.environ['POSTGRES_DB'] = TEST_DB_NAME
 
+test_log_dir = Path(__file__).parent / 'logs'
+test_log_dir.mkdir(exist_ok=True)
+os.environ['LOG_DIR'] = str(test_log_dir)
+os.environ.setdefault('LOG_FILE_PREFIX', 'test_')
+
 from src.main import app  # noqa: F403, E402
 from tests.order.functional.fixtures import *  # noqa: F403, E402, E402
 from tests.order.functional.given import *  # noqa: F403, E402
