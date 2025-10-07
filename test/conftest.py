@@ -30,8 +30,6 @@ from test.order.fixtures import *  # noqa: F403, E402, E402
 from test.order.integration.given import *  # noqa: F403, E402
 from test.order.integration.then import *  # noqa: F403, E402
 from test.order.integration.when import *  # noqa: F403, E402
-from test.platform.given import *  # noqa: F403, E402
-from test.platform.then import *  # noqa: F403, E402
 from test.product.fixtures import *  # noqa: F403, E402
 from test.product.integration.given import *  # noqa: F403, E402
 from test.product.integration.then import *  # noqa: F403, E402
@@ -40,6 +38,8 @@ from test.pytest_bdd_ng_example.fixtures import *  # noqa: F403, E402
 from test.pytest_bdd_ng_example.given import *  # noqa: F403, E402
 from test.pytest_bdd_ng_example.then import *  # noqa: F403, E402
 from test.pytest_bdd_ng_example.when import *  # noqa: F403, E402
+from test.shared.steps.given import *  # noqa: F403, E402
+from test.shared.steps.then import *  # noqa: F403, E402
 from test.user.fixtures import *  # noqa: F403, E402
 from test.user.integration.steps.then import *  # noqa: F403, E402
 from test.user.integration.steps.when import *  # noqa: F403, E402
