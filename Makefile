@@ -32,7 +32,7 @@ migrate-current mc:
 # Testing
 .PHONY: test t mt
 test t mt:
-	@uv run pytest test/ -v -n 12
+	@uv run pytest test/ -v -n 15
 
 .PHONY: test-serial ts
 test-serial ts:
