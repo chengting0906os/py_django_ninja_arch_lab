@@ -51,9 +51,9 @@ lint:
 format:
 	@uv run ruff format .
 
-.PHONY: typecheck
-typecheck:
-	@uv run pyright
+.PHONY: pyre
+pyre:
+	@uv run pyrefly check
 
 # Development
 .PHONY: run

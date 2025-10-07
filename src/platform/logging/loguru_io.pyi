@@ -1,6 +1,4 @@
-from typing import Any, Callable, Optional, TypeVar, overload
-
-from typing import ParamSpec
+from typing import Any, Callable, Optional, ParamSpec, TypeVar, overload
 
 from src.platform.logging.loguru_io_config import GeneratorMethod
 
