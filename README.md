@@ -2,26 +2,31 @@
 
 ## This repository is a lab for **Clean Architecture**, **Domain-Driven Design (DDD)**, and disciplined testing (TDD/BDD).
 
-## Clean Architecture at a Glance
+It implements Clean Architecture via a hexagonal (ports & adapters) structure: **driving adapters** handle inbound requests (FastAPI controllers), while **driven adapters** connect to outbound dependencies (SQLAlchemy repositories, auth services).
+
+## Clean Architecture Overview
 
 ```
 src/
-├─ domain/           # Core business model (pure, side-effect free)
-├─ app/              # Application layer (use cases, orchestrating ports)
-├─ driven_adapter/   # Outbound adapters (DB, auth, external services)
-├─ driving_adapter/  # Inbound adapters (FastAPI controllers, schemas)
-└─ platform/         # Cross-cutting infrastructure (config, DB, logging, migrations)
+├─ domain/           # Core business model: aggregates, entities, value objects, domain events
+│                    # pure business logic
+├─ app/
+│  ├─ interface/     # Ports (abstract contracts/interfaces) defining dependencies
+│  └─ use_case/      # Application services orchestrating domain/business workflows via those ports
+│
+├─ driven_adapter/   # Outbound adapters implementing app interfaces
+│                    # (repositories, external APIs, message queues)
+│
+├─ driving_adapter/  # Inbound adapters exposing app functionality
+│                    # (REST controllers, GraphQL resolvers, CLI commands)
+│
+└─ platform/         # Shared infrastructure concerns
+                     # (config, database setup, logging, DI container)
 ```
-
-- **Domain layer** (`src/domain`) – business truth in `attrs` entities, value objects, aggregates, domain events, and enums.
-- **Application layer** (`src/app`) – async use cases and UoW boundaries built on interfaces.
-- **Driven adapters** (`src/driven_adapter`) – SQLAlchemy repos, auth helpers, and other outbound integrations.
-- **Driving adapters** (`src/driving_adapter`) – FastAPI controllers + Pydantic schemas as inbound ports.
-- **Platform** (`src/platform`) – configuration, Alembic migrations, DB sessions, logging, notifications.
 
 ---
 
-## Inside the Domain Layer
+## Domain Layer Overview
 
 ```
 src/domain/
@@ -31,11 +36,6 @@ src/domain/
 ├─ enum/            # Domain enums (OrderStatus, ProductStatus, UserRole)
 └─ domain_event/    # Events describing state changes (OrderCreatedEvent, etc.)
 ```
-
-- **Aggregates** enforce invariants and emit events (`OrderAggregate` orchestrates reservation/payment/cancellation).
-- **Entities** capture business state with `attrs` validators (e.g., price must be positive).
-- **Value objects** provide immutable snapshots for messaging across layers.
-- **Domain events** express meaningful changes that adapters can react to.
 
 ---
 
