@@ -10,11 +10,11 @@ from sqlalchemy import engine_from_config, pool
 sys.path.append(str(Path(__file__).parents[3]))
 
 # Import your models and database configuration
-from src.driven_adapter.order.order_model import OrderModel as OrderModel
+from src.driven_adapter.model.order_model import OrderModel as OrderModel
 from src.platform.config.core_setting import settings
-from src.platform.config.db_setting import Base
-from src.driven_adapter.product.product_model import ProductModel as ProductModel
-from src.domain.user.user_model import User as User
+from src.platform.db.db_setting import Base
+from src.driven_adapter.model.product_model import ProductModel as ProductModel
+from src.driven_adapter.model.user_model import User as User
 
 
 # this is the Alembic Config object, which provides

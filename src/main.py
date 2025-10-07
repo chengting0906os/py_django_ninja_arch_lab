@@ -5,12 +5,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.driving_adapter.order.order_controller import router as order_router
+from src.driving_adapter.http_controller.order_controller import router as order_router
 from src.platform.config.core_setting import settings
-from src.platform.config.db_setting import create_db_and_tables
+from src.platform.db.db_setting import create_db_and_tables
 from src.platform.exception.exception_handlers import register_exception_handlers
-from src.driving_adapter.product.product_controller import router as product_router
-from src.driving_adapter.user.user_controller import auth_router, users_router
+from src.driving_adapter.http_controller.product_controller import router as product_router
+from src.driving_adapter.http_controller.user_controller import auth_router, users_router
 
 
 @asynccontextmanager
