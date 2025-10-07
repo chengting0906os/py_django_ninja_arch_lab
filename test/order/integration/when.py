@@ -8,8 +8,8 @@ from src.platform.constant.route_constant import (
     ORDER_MY_ORDERS,
     ORDER_PAY,
 )
-from tests.shared.utils import create_user, extract_table_data, login_user
-from tests.util_constant import (
+from test.shared.utils import create_user, extract_table_data, login_user
+from test.util_constant import (
     ANOTHER_BUYER_EMAIL,
     ANOTHER_BUYER_NAME,
     BUYER1_EMAIL,

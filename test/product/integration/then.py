@@ -1,7 +1,7 @@
 from pytest_bdd import then
 
 from src.platform.constant.route_constant import PRODUCT_GET
-from tests.shared.utils import extract_table_data
+from test.shared.utils import extract_table_data
 
 
 @then('the product should be created with')

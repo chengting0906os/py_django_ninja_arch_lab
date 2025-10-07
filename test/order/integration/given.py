@@ -12,8 +12,8 @@ from src.platform.constant.route_constant import (
     PRODUCT_BASE,
     USER_CREATE,
 )
-from tests.shared.utils import extract_table_data
-from tests.util_constant import (
+from test.shared.utils import extract_table_data
+from test.util_constant import (
     DEFAULT_PASSWORD,
     TEST_BUYER_EMAIL,
     TEST_BUYER_NAME,

@@ -69,7 +69,7 @@ jobs:
           uv run pyrefly check
 
   test:
-    name: Run Tests
+    name: Run test
     runs-on: ubuntu-latest
     needs: [lint, type-check]
     services:
@@ -118,6 +118,6 @@ jobs:
         run: |
           cd src/platform/alembic && uv run alembic upgrade head
 
-      - name: Run tests
+      - name: Run test
         run: |
           uv run pytest -v --tb=short

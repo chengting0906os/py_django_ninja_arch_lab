@@ -55,7 +55,7 @@ class CancelOrderUseCase:
             if not seller:
                 raise DomainError('Seller not found', 404)
 
-            aggregate = OrderAggregate.from_existing(order, product, buyer, seller)
+            aggregate = OrderAggregate.from_existing_order(order, product, buyer, seller)
             aggregate.cancel()
 
             events = aggregate.collect_events()

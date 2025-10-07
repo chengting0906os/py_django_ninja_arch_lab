@@ -16,12 +16,6 @@ class DomainEventProtocol(Protocol):
 
 
 @attrs.define(frozen=True)
-class DomainEvent:
-    aggregate_id: int
-    occurred_at: datetime = attrs.field(factory=datetime.now)
-
-
-@attrs.define(frozen=True)
 class OrderCreatedEvent:
     aggregate_id: int
     buyer_id: int

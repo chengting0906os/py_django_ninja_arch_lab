@@ -26,23 +26,23 @@ os.environ['LOG_DIR'] = str(test_log_dir)
 os.environ.setdefault('LOG_FILE_PREFIX', 'test_')
 
 from src.main import app  # noqa: F403, E402
-from tests.order.fixtures import *  # noqa: F403, E402, E402
-from tests.order.integration.given import *  # noqa: F403, E402
-from tests.order.integration.then import *  # noqa: F403, E402
-from tests.order.integration.when import *  # noqa: F403, E402
-from tests.platform.given import *  # noqa: F403, E402
-from tests.platform.then import *  # noqa: F403, E402
-from tests.product.fixtures import *  # noqa: F403, E402
-from tests.product.integration.given import *  # noqa: F403, E402
-from tests.product.integration.then import *  # noqa: F403, E402
-from tests.product.integration.when import *  # noqa: F403, E402
-from tests.pytest_bdd_ng_example.fixtures import *  # noqa: F403, E402
-from tests.pytest_bdd_ng_example.given import *  # noqa: F403, E402
-from tests.pytest_bdd_ng_example.then import *  # noqa: F403, E402
-from tests.pytest_bdd_ng_example.when import *  # noqa: F403, E402
-from tests.user.fixtures import *  # noqa: F403, E402
-from tests.user.integration.steps.then import *  # noqa: F403, E402
-from tests.user.integration.steps.when import *  # noqa: F403, E402
+from test.order.fixtures import *  # noqa: F403, E402, E402
+from test.order.integration.given import *  # noqa: F403, E402
+from test.order.integration.then import *  # noqa: F403, E402
+from test.order.integration.when import *  # noqa: F403, E402
+from test.platform.given import *  # noqa: F403, E402
+from test.platform.then import *  # noqa: F403, E402
+from test.product.fixtures import *  # noqa: F403, E402
+from test.product.integration.given import *  # noqa: F403, E402
+from test.product.integration.then import *  # noqa: F403, E402
+from test.product.integration.when import *  # noqa: F403, E402
+from test.pytest_bdd_ng_example.fixtures import *  # noqa: F403, E402
+from test.pytest_bdd_ng_example.given import *  # noqa: F403, E402
+from test.pytest_bdd_ng_example.then import *  # noqa: F403, E402
+from test.pytest_bdd_ng_example.when import *  # noqa: F403, E402
+from test.user.fixtures import *  # noqa: F403, E402
+from test.user.integration.steps.then import *  # noqa: F403, E402
+from test.user.integration.steps.when import *  # noqa: F403, E402
 
 
 DB_CONFIG = {

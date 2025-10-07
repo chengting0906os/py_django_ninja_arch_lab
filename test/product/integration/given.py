@@ -2,8 +2,8 @@ from fastapi.testclient import TestClient
 from pytest_bdd import given
 
 from src.platform.constant.route_constant import PRODUCT_BASE
-from tests.shared.utils import create_user, extract_table_data, login_user
-from tests.util_constant import (
+from test.shared.utils import create_user, extract_table_data, login_user
+from test.util_constant import (
     DEFAULT_PASSWORD,
     EMPTY_LIST_SELLER_EMAIL,
     EMPTY_LIST_SELLER_NAME,

@@ -1,6 +1,6 @@
 from pytest_bdd import then
 
-from tests.shared.utils import assert_response_status, extract_single_value
+from test.shared.utils import assert_response_status, extract_single_value
 
 
 def get_state_with_response(user_state=None, product_state=None, order_state=None):

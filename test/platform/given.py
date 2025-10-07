@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from pytest_bdd import given
 
 from src.platform.constant.route_constant import PRODUCT_BASE, USER_CREATE
-from tests.shared.utils import create_user, extract_table_data, login_user
+from test.shared.utils import create_user, extract_table_data, login_user
 
 
 @given('I am logged in as:')

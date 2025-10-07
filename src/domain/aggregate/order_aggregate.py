@@ -70,7 +70,7 @@ class OrderAggregate:
 
     @classmethod
     @Logger.io
-    def from_existing(
+    def from_existing_order(
         cls,
         order: Order,
         product: Product,
@@ -134,7 +134,6 @@ class OrderAggregate:
                 buyer_id=self.order.buyer_id,
                 product_id=self.order.product_id,
                 paid_at=self.order.paid_at or datetime.now(),
-                # Rich data to avoid N+1 queries
                 buyer_email=self.buyer_info.email,
                 product_name=self.product_snapshot.name,
                 paid_amount=self.order.price,

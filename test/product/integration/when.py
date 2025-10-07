@@ -7,7 +7,7 @@ from src.platform.constant.route_constant import (
     PRODUCT_LIST,
     PRODUCT_UPDATE,
 )
-from tests.shared.utils import extract_table_data
+from test.shared.utils import extract_table_data
 
 
 @when('I create a product with')

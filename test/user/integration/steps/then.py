@@ -1,6 +1,6 @@
 from pytest_bdd import then
 
-from tests.shared.utils import extract_table_data
+from test.shared.utils import extract_table_data
 
 
 @then('the user details should be:')

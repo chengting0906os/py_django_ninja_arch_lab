@@ -1,1 +1,0 @@
-"""User integration tests package."""

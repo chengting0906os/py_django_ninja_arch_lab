@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from pytest_bdd import then
 
 from src.platform.constant.route_constant import ORDER_GET, PRODUCT_GET
-from tests.shared.utils import assert_response_status, extract_single_value, extract_table_data
+from test.shared.utils import assert_response_status, extract_single_value, extract_table_data
 
 
 def assert_nullable_field(

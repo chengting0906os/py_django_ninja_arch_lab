@@ -1,4 +1,4 @@
-"""Unit tests for MockEmailService."""
+"""Unit test for MockEmailService."""
 
 from datetime import datetime
 

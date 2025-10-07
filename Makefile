@@ -32,19 +32,19 @@ migrate-current mc:
 # Testing
 .PHONY: test t mt
 test t mt:
-	@uv run pytest tests/ -v -n 12
+	@uv run pytest test/ -v -n 12
 
 .PHONY: test-serial ts
 test-serial ts:
-	@uv run pytest tests/ -v
+	@uv run pytest test/ -v
 
 .PHONY: test-api
 test-api:
-	@uv run pytest tests/test_user_api_async.py -v
+	@uv run pytest test/test_user_api_async.py -v
 
 .PHONY: test-bdd tbdd
 test-bdd tbdd:
-	@uv run pytest tests/features/ -v
+	@uv run pytest test/features/ -v
 
 # Linting and formatting
 .PHONY: lint
@@ -99,9 +99,9 @@ help:
 	@echo "    make migrate-current (mc) - Show current migration"
 	@echo ""
 	@echo "  Testing:"
-	@echo "    make test (t)            - Run all tests"
-	@echo "    make test-api            - Run API tests"
-	@echo "    make test-bdd (tbdd)     - Run BDD tests"
+	@echo "    make test (t)            - Run all test"
+	@echo "    make test-api            - Run API test"
+	@echo "    make test-bdd (tbdd)     - Run BDD test"
 	@echo ""
 	@echo "  Development:"
 	@echo "    make run                 - Run development server"
