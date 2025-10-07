@@ -2,7 +2,7 @@
 
 from fastapi import Depends
 
-from src.domain.entity.product_entity import ProductStatus
+from src.domain.enum.product_status import ProductStatus
 from src.platform.db.unit_of_work import AbstractUnitOfWork, get_unit_of_work
 from src.platform.logging.loguru_io import Logger
 
