@@ -5,14 +5,14 @@ from typing import List, Optional
 from sqlalchemy import delete as sql_delete, select, update as sql_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.platform.exception.exceptions import DomainError
-from src.platform.logging.loguru_io import Logger
+from src.app.interface.i_product_repo import IProductRepo
 from src.domain.entity.product_entity import Product, ProductStatus
 from src.domain.entity.user_entity import User
 from src.domain.enum.user_role_enum import UserRole
-from src.app.interface.i_product_repo import IProductRepo
 from src.driven_adapter.model.product_model import ProductModel
 from src.driven_adapter.model.user_model import User as UserModel
+from src.platform.exception.exceptions import DomainError
+from src.platform.logging.loguru_io import Logger
 
 
 class ProductRepoImpl(IProductRepo):

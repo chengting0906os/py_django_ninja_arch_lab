@@ -4,22 +4,20 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, status
 
-from src.platform.exception.exceptions import NotFoundError
-from src.platform.logging.loguru_io import Logger
+from src.app.use_case.product.create_product_use_case import CreateProductUseCase
+from src.app.use_case.product.delete_product_use_case import DeleteProductUseCase
+from src.app.use_case.product.get_product_use_case import GetProductUseCase
+from src.app.use_case.product.list_product_use_case import ListProductsUseCase
+from src.app.use_case.product.update_product_use_case import UpdateProductUseCase
+from src.driven_adapter.model.user_model import User
 from src.driving_adapter.http_controller.dependency.role_auth import require_seller
 from src.driving_adapter.http_controller.schema.product_schema import (
     ProductCreateRequest,
     ProductResponse,
     ProductUpdateRequest,
 )
-from src.app.use_case.product_use_case import (
-    CreateProductUseCase,
-    DeleteProductUseCase,
-    GetProductUseCase,
-    ListProductsUseCase,
-    UpdateProductUseCase,
-)
-from src.domain.entity.user_entity import User
+from src.platform.exception.exceptions import NotFoundError
+from src.platform.logging.loguru_io import Logger
 
 
 router = APIRouter()
@@ -32,11 +30,15 @@ async def create_product(
     current_user: User = Depends(require_seller),
     use_case: CreateProductUseCase = Depends(CreateProductUseCase.depends),
 ) -> ProductResponse:
+    seller_id = current_user.id
+    if seller_id is None:
+        raise ValueError('Authenticated user ID cannot be None.')
+
     product = await use_case.create(
         name=request.name,
         description=request.description,
         price=request.price,
-        seller_id=current_user.id,  # Use current user's ID
+        seller_id=seller_id,  # Use current user's ID
         is_active=request.is_active,
     )
 

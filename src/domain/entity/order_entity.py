@@ -1,20 +1,13 @@
 """Order entity."""
 
 from datetime import datetime
-from enum import Enum
 from typing import Optional
 
 import attrs
 
+from src.domain.enum.order_status import OrderStatus
 from src.platform.exception.exceptions import DomainError
 from src.platform.logging.loguru_io import Logger
-
-
-class OrderStatus(str, Enum):
-    PENDING_PAYMENT = 'pending_payment'
-    PAID = 'paid'
-    CANCELLED = 'cancelled'
-    COMPLETED = 'completed'
 
 
 @Logger.io

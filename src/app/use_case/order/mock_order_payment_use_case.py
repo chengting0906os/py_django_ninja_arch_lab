@@ -6,14 +6,14 @@ from typing import Any, Dict
 
 from fastapi import Depends
 
-from src.domain.entity.order_entity import OrderStatus
+from src.domain.enum.order_status import OrderStatus
+from src.domain.enum.product_status import ProductStatus
+from src.platform.db.unit_of_work import AbstractUnitOfWork, get_unit_of_work
 from src.platform.exception.exceptions import DomainError, ForbiddenError, NotFoundError
 from src.platform.logging.loguru_io import Logger
-from src.platform.db.unit_of_work import AbstractUnitOfWork, get_unit_of_work
-from src.domain.entity.product_entity import ProductStatus
 
 
-class MockPaymentUseCase:
+class MockOrderPaymentUseCase:
     def __init__(self, uow: AbstractUnitOfWork):
         self.uow = uow
 
@@ -53,12 +53,3 @@ class MockPaymentUseCase:
                 'status': 'paid',
                 'paid_at': updated_order.paid_at.isoformat() if updated_order.paid_at else None,
             }
-
-    @Logger.io
-    async def cancel_order(self, order_id: int, buyer_id: int) -> None:
-        async with self.uow:
-            cancelled_order = await self.uow.orders.cancel_order_atomically(order_id, buyer_id)
-
-            await self.uow.products.release_product_atomically(cancelled_order.product_id)
-
-            await self.uow.commit()

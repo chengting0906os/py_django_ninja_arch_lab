@@ -68,6 +68,24 @@ class OrderAggregate:
 
         return aggregate
 
+    @classmethod
+    @Logger.io
+    def from_existing(
+        cls,
+        order: Order,
+        product: Product,
+        buyer: 'User',
+        seller: 'User',
+    ) -> 'OrderAggregate':
+        aggregate = cls(
+            order=order,
+            product_snapshot=ProductSnapshot.from_product(product),
+            buyer_info=BuyerInfo.from_user(buyer),
+            seller_info=SellerInfo.from_user(seller),
+        )
+        aggregate._product = product
+        return aggregate
+
     def emit_creation_events(self) -> None:
         if not self.order.id:
             raise ValueError('Order must have an ID before emitting events')

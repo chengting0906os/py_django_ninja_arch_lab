@@ -1,18 +1,12 @@
 """Product entity."""
 
-from enum import Enum
 from typing import Optional
 
 import attrs
 
+from src.domain.enum.product_status import ProductStatus
 from src.platform.exception.exceptions import DomainError
 from src.platform.logging.loguru_io import Logger
-
-
-class ProductStatus(str, Enum):
-    AVAILABLE = 'available'
-    RESERVED = 'reserved'
-    SOLD = 'sold'
 
 
 @Logger.io

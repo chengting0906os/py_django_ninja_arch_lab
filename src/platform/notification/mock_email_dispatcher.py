@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import List, Optional
 
 from src.platform.logging.loguru_io import Logger
+from src.app.interface.i_email_dispatcher import IEmailDispatcher
 
 
-class MockEmailDispatcher:
+class MockEmailDispatcher(IEmailDispatcher):
     def __init__(self):
         self.sent_emails: List[dict] = []
 
@@ -139,9 +140,9 @@ class MockEmailDispatcher:
 
 
 # Global instance for dependency injection
-mock_email_service = MockEmailDispatcher()
+mock_email_dispatcher = MockEmailDispatcher()
 
 
 @Logger.io
-def get_mock_email_service() -> MockEmailDispatcher:
-    return mock_email_service
+def get_mock_email_dispatcher() -> MockEmailDispatcher:
+    return mock_email_dispatcher

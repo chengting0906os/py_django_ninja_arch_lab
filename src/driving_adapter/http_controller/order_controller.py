@@ -4,20 +4,22 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, status
 
+from src.app.use_case.order.cancel_order_use_case import CancelOrderUseCase
+from src.app.use_case.order.create_order_use_case import CreateOrderUseCase
+from src.app.use_case.order.get_order_use_case import GetOrderUseCase
+from src.app.use_case.order.list_order_use_case import ListOrdersUseCase
+from src.app.use_case.order.mock_order_payment_use_case import MockOrderPaymentUseCase
+from src.domain.enum.user_role_enum import UserRole
+from src.driven_adapter.model.user_model import User
+from src.driving_adapter.http_controller.dependency.role_auth import get_current_user, require_buyer
 from src.driving_adapter.http_controller.schema.order_schema import (
     OrderCreateRequest,
     OrderResponse,
     PaymentRequest,
     PaymentResponse,
 )
-from src.app.use_case.create_order_use_case import CreateOrderUseCase
-from src.app.use_case.get_order_use_case import GetOrderUseCase
-from src.app.use_case.list_orders_use_case import ListOrdersUseCase
-from src.app.use_case.mock_payment_use_case import MockPaymentUseCase
 from src.platform.logging.loguru_io import Logger
-from src.driving_adapter.http_controller.dependency.role_auth import get_current_user, require_buyer
-from src.domain.enum.user_role_enum import UserRole
-from src.domain.entity.user_entity import User
+
 
 router = APIRouter()
 
@@ -30,8 +32,11 @@ async def create_order(
     use_case: CreateOrderUseCase = Depends(CreateOrderUseCase.depends),
 ) -> OrderResponse:
     # Use authenticated buyer's ID instead of request.buyer_id
+    buyer_id = current_user.id
+    if buyer_id is None:
+        raise ValueError('Authenticated user ID cannot be None.')
 
-    order = await use_case.create_order(buyer_id=current_user.id, product_id=request.product_id)
+    order = await use_case.create_order(buyer_id=buyer_id, product_id=request.product_id)
 
     if order.id is None:
         raise ValueError('Order ID should not be None after creation.')
@@ -56,9 +61,15 @@ async def list_my_orders(
     use_case: ListOrdersUseCase = Depends(ListOrdersUseCase.depends),
 ):
     if current_user.role == UserRole.BUYER:
-        return await use_case.list_buyer_orders(current_user.id, order_status)
+        buyer_id = current_user.id
+        if buyer_id is None:
+            raise ValueError('Authenticated user ID cannot be None.')
+        return await use_case.list_buyer_orders(buyer_id, order_status)
     elif current_user.role == UserRole.SELLER:
-        return await use_case.list_seller_orders(current_user.id, order_status)
+        seller_id = current_user.id
+        if seller_id is None:
+            raise ValueError('Authenticated user ID cannot be None.')
+        return await use_case.list_seller_orders(seller_id, order_status)
     else:
         return []
 
@@ -90,17 +101,21 @@ async def pay_order(
     order_id: int,
     request: PaymentRequest,
     current_user: User = Depends(require_buyer),
-    use_case: MockPaymentUseCase = Depends(MockPaymentUseCase.depends),
+    use_case: MockOrderPaymentUseCase = Depends(MockOrderPaymentUseCase.depends),
 ) -> PaymentResponse:
-    result = await use_case.pay_order(
-        order_id=order_id, buyer_id=current_user.id, card_number=request.card_number
+    buyer_id = current_user.id
+    if buyer_id is None:
+        raise ValueError('Authenticated user ID cannot be None.')
+
+    payment_result = await use_case.pay_order(
+        order_id=order_id, buyer_id=buyer_id, card_number=request.card_number
     )
 
     return PaymentResponse(
-        order_id=result['order_id'],
-        payment_id=result['payment_id'],
-        status=result['status'],
-        paid_at=result['paid_at'],
+        order_id=payment_result['order_id'],
+        payment_id=payment_result['payment_id'],
+        status=payment_result['status'],
+        paid_at=payment_result['paid_at'],
     )
 
 
@@ -109,9 +124,13 @@ async def pay_order(
 async def cancel_order(
     order_id: int,
     current_user: User = Depends(require_buyer),
-    use_case: MockPaymentUseCase = Depends(MockPaymentUseCase.depends),
+    use_case: CancelOrderUseCase = Depends(CancelOrderUseCase.depends),
 ):
-    await use_case.cancel_order(order_id=order_id, buyer_id=current_user.id)
+    buyer_id = current_user.id
+    if buyer_id is None:
+        raise ValueError('Authenticated user ID cannot be None.')
+
+    await use_case.cancel(order_id=order_id, buyer_id=buyer_id)
 
     return None
 
