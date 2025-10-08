@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from asgiref.sync import sync_to_async
 from django.http import HttpRequest
-from injector import Injector
+from injector import inject
 from ninja_extra import ControllerBase, api_controller, http_delete, http_get, http_post
 
 from src.app.use_case.order.cancel_order_use_case import CancelOrderUseCase
@@ -19,7 +19,6 @@ from src.driving_adapter.http_controller.schema.order_schema import (
     PaymentRequest,
     PaymentResponse,
 )
-from src.platform.di import ApplicationModule
 from src.platform.exception.exceptions import DomainError, ForbiddenError
 from src.platform.logging.loguru_io import Logger
 
@@ -39,10 +38,20 @@ def _build_order_response(order) -> OrderResponse:
 
 @api_controller('/order', tags=['order'])
 class OrderController(ControllerBase):
-    _injector = Injector([ApplicationModule()])
-
-    def _create_use_case(self, use_case_cls):
-        return self._injector.get(use_case_cls)
+    @inject
+    def __init__(
+        self,
+        create_order_use_case: CreateOrderUseCase,
+        cancel_order_use_case: CancelOrderUseCase,
+        get_order_use_case: GetOrderUseCase,
+        list_orders_use_case: ListOrdersUseCase,
+        mock_order_payment_use_case: MockOrderPaymentUseCase,
+    ):
+        self.create_order_use_case = create_order_use_case
+        self.cancel_order_use_case = cancel_order_use_case
+        self.get_order_use_case = get_order_use_case
+        self.list_orders_use_case = list_orders_use_case
+        self.mock_order_payment_use_case = mock_order_payment_use_case
 
     async def _get_authenticated_user(self, request: HttpRequest):
         user = await sync_to_async(lambda: request.user)()
@@ -64,8 +73,9 @@ class OrderController(ControllerBase):
         if buyer.id is None:
             raise DomainError('Authenticated user ID cannot be None')
 
-        use_case = self._create_use_case(CreateOrderUseCase)
-        order = await use_case.create_order(buyer_id=buyer.id, product_id=payload.product_id)
+        order = await self.create_order_use_case.create_order(
+            buyer_id=buyer.id, product_id=payload.product_id
+        )
 
         if order.id is None:
             raise DomainError('Order ID should not be None after creation')
@@ -76,28 +86,27 @@ class OrderController(ControllerBase):
     @Logger.io
     async def list_my_orders(self, request: HttpRequest):
         # Extract order_status from query parameters manually
-        order_status = request.GET.get('order_status')
+        order_status_raw = request.GET.get('order_status')
+        order_status: Optional[str] = str(order_status_raw) if order_status_raw else None
 
         user = await self._get_authenticated_user(request)
         role = getattr(user, 'role', UserRole.BUYER.value)
-        use_case = self._create_use_case(ListOrdersUseCase)
 
         if role == UserRole.BUYER.value:
             if user.id is None:
                 raise DomainError('Authenticated user ID cannot be None')
-            return await use_case.list_buyer_orders(user.id, order_status)
+            return await self.list_orders_use_case.list_buyer_orders(user.id, order_status)
         if role == UserRole.SELLER.value:
             if user.id is None:
                 raise DomainError('Authenticated user ID cannot be None')
-            return await use_case.list_seller_orders(user.id, order_status)
+            return await self.list_orders_use_case.list_seller_orders(user.id, order_status)
         return []
 
     @http_get('/{order_id}', response=OrderResponse)
     @Logger.io
     async def get_order(self, request: HttpRequest, order_id: int):
         await self._get_authenticated_user(request)
-        use_case = self._create_use_case(GetOrderUseCase)
-        order = await use_case.get_order(order_id)
+        order = await self.get_order_use_case.get_order(order_id)
         return _build_order_response(order)
 
     @http_post('/{order_id}/pay', response=PaymentResponse)
@@ -107,8 +116,7 @@ class OrderController(ControllerBase):
         if buyer.id is None:
             raise DomainError('Authenticated user ID cannot be None')
 
-        use_case = self._create_use_case(MockOrderPaymentUseCase)
-        payment_result = await use_case.pay_order(
+        payment_result = await self.mock_order_payment_use_case.pay_order(
             order_id=order_id, buyer_id=buyer.id, card_number=payload.card_number
         )
         return PaymentResponse(**payment_result)
@@ -120,8 +128,7 @@ class OrderController(ControllerBase):
         if buyer.id is None:
             raise DomainError('Authenticated user ID cannot be None')
 
-        use_case = self._create_use_case(CancelOrderUseCase)
-        await use_case.cancel(order_id=order_id, buyer_id=buyer.id)
+        await self.cancel_order_use_case.cancel(order_id=order_id, buyer_id=buyer.id)
         return self.create_response(None, status_code=204)
 
     @http_get('/seller/{seller_id}', response=list[dict[str, Any]])
@@ -130,5 +137,4 @@ class OrderController(ControllerBase):
         self, request: HttpRequest, seller_id: int, order_status: Optional[str] = None
     ):
         await self._get_authenticated_user(request)
-        use_case = self._create_use_case(ListOrdersUseCase)
-        return await use_case.list_seller_orders(seller_id, order_status)
+        return await self.list_orders_use_case.list_seller_orders(seller_id, order_status)

@@ -4,7 +4,7 @@ from typing import List
 
 from asgiref.sync import sync_to_async
 from django.http import HttpRequest
-from injector import Injector
+from injector import inject
 from ninja_extra import (
     ControllerBase,
     api_controller,
@@ -25,7 +25,6 @@ from src.driving_adapter.http_controller.schema.product_schema import (
     ProductResponse,
     ProductUpdateRequest,
 )
-from src.platform.di import ApplicationModule
 from src.platform.exception.exceptions import DomainError, ForbiddenError, NotFoundError
 from src.platform.logging.loguru_io import Logger
 
@@ -44,14 +43,20 @@ def _build_product_response(product) -> ProductResponse:
 
 @api_controller('/product', tags=['product'])
 class ProductController(ControllerBase):
-    _injector = Injector([ApplicationModule()])
-
-    def __init__(self):
-        self.create_product_use_case = self._injector.get(CreateProductUseCase)
-        self.delete_product_use_case = self._injector.get(DeleteProductUseCase)
-        self.get_product_use_case = self._injector.get(GetProductUseCase)
-        self.list_product_use_case = self._injector.get(ListProductUseCase)
-        self.update_product_use_case = self._injector.get(UpdateProductUseCase)
+    @inject
+    def __init__(
+        self,
+        create_product_use_case: CreateProductUseCase,
+        delete_product_use_case: DeleteProductUseCase,
+        get_product_use_case: GetProductUseCase,
+        list_product_use_case: ListProductUseCase,
+        update_product_use_case: UpdateProductUseCase,
+    ):
+        self.create_product_use_case = create_product_use_case
+        self.delete_product_use_case = delete_product_use_case
+        self.get_product_use_case = get_product_use_case
+        self.list_product_use_case = list_product_use_case
+        self.update_product_use_case = update_product_use_case
 
     async def _get_authenticated_user(self, request: HttpRequest):
         user = await sync_to_async(lambda: request.user)()
