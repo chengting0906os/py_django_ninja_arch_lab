@@ -62,7 +62,7 @@ pyre:
 # Development
 .PHONY: run
 run:
-	@uv run uvicorn src.platform.asgi:application --reload --host 0.0.0.0 --port 8000
+	@uv run uvicorn src.platform.config.asgi:application --reload --host 0.0.0.0 --port 8000
 
 .PHONY: clean
 clean:

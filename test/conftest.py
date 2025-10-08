@@ -77,7 +77,7 @@ class SessionTestAsyncClient(TestAsyncClient):
 
 @pytest.fixture(scope='session')
 def api_instance():
-    from src.platform.api import api
+    from src.platform.config.api import api
 
     return api
 

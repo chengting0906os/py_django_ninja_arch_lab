@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-import os
 from contextlib import asynccontextmanager
+import os
 from typing import Any, AsyncGenerator, Awaitable, Callable, Dict
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.platform.settings')
 
@@ -75,7 +76,7 @@ async def application(
 def main() -> None:
     """Launch the ASGI server with uvicorn."""
     uvicorn.run(
-        'src.platform.asgi:application',
+        'src.platform.config.asgi:application',
         host='0.0.0.0',
         port=8000,
         reload=True,

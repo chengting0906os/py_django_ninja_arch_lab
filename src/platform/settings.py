@@ -35,8 +35,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'src.platform.urls'
-ASGI_APPLICATION = 'src.platform.asgi.application'
+ROOT_URLCONF = 'src.platform.config.urls'
+ASGI_APPLICATION = 'src.platform.config.asgi.application'
 
 TEMPLATES = [
     {
@@ -90,7 +90,7 @@ AUTH_USER_MODEL = 'driven_adapter.User'
 
 NINJA_EXTRA = {
     'app_name': 'api',
-    'INJECTOR_MODULES': ['src.platform.di.ApplicationModule'],
+    'INJECTOR_MODULES': ['src.platform.config.di.ApplicationModule'],
 }
 
 CORS_ALLOW_CREDENTIALS = True
