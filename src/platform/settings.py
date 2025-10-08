@@ -2,13 +2,13 @@
 
 from pathlib import Path
 
-from src.platform.config.core_setting import settings as core_settings
+from src.platform.config.env_config import env_config
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = core_settings.SECRET_KEY.get_secret_value()
-DEBUG = core_settings.DEBUG
+SECRET_KEY = env_config.SECRET_KEY.get_secret_value()
+DEBUG = env_config.DEBUG
 ALLOWED_HOSTS: list[str] = ['*']
 
 INSTALLED_APPS = [
@@ -57,11 +57,11 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': core_settings.POSTGRES_DB,
-        'USER': core_settings.POSTGRES_USER,
-        'PASSWORD': core_settings.POSTGRES_PASSWORD.get_secret_value(),
-        'HOST': core_settings.POSTGRES_SERVER,
-        'PORT': core_settings.POSTGRES_PORT,
+        'NAME': env_config.POSTGRES_DB,
+        'USER': env_config.POSTGRES_USER,
+        'PASSWORD': env_config.POSTGRES_PASSWORD.get_secret_value(),
+        'HOST': env_config.POSTGRES_SERVER,
+        'PORT': env_config.POSTGRES_PORT,
     }
 }
 
@@ -94,7 +94,7 @@ NINJA_EXTRA = {
 }
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = core_settings.BACKEND_CORS_ORIGINS
+CORS_ALLOWED_ORIGINS = env_config.BACKEND_CORS_ORIGINS
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
