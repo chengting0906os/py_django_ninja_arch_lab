@@ -1,1 +1,0 @@
-"""Product integration step definitions."""

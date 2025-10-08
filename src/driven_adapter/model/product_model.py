@@ -1,18 +1,30 @@
-"""Product database models."""
+"""Django ORM representation for products."""
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from django.conf import settings
+from django.db import models
 
-from src.platform.db.db_setting import Base
+from src.domain.enum.product_status import ProductStatus
 
 
-class ProductModel(Base):
-    __tablename__ = 'product'
+class ProductModel(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    price = models.PositiveIntegerField()
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='products',
+    )
+    is_active = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=20,
+        # pyrefly: ignore  # not-iterable
+        choices=[(status.value, status.value) for status in ProductStatus],
+        default=ProductStatus.AVAILABLE.value,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String)
-    description: Mapped[str] = mapped_column(String)
-    price: Mapped[int] = mapped_column(Integer)
-    seller_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'))
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    status: Mapped[str] = mapped_column(String(20), default='available', nullable=False)
+    class Meta:
+        db_table = 'product'
+        ordering = ['id']

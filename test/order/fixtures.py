@@ -10,7 +10,6 @@ from test.shared.fakes import (
     FakeOrdersRepo,
     FakeProductsRepo,
     FakeUsersRepo,
-    StubOrderUnitOfWork,
 )
 
 
@@ -44,20 +43,6 @@ def fake_products_repo_factory() -> Callable[
 def fake_orders_repo_factory() -> Callable[[int], FakeOrdersRepo]:
     def _factory(created_order_id: int) -> FakeOrdersRepo:
         return FakeOrdersRepo(created_order_id)
-
-    return _factory
-
-
-@pytest.fixture
-def order_uow_factory() -> Callable[
-    [FakeUsersRepo, FakeProductsRepo, FakeOrdersRepo], StubOrderUnitOfWork
-]:
-    def _factory(
-        users_repo: FakeUsersRepo,
-        products_repo: FakeProductsRepo,
-        orders_repo: FakeOrdersRepo,
-    ) -> StubOrderUnitOfWork:
-        return StubOrderUnitOfWork(users_repo, products_repo, orders_repo)
 
     return _factory
 

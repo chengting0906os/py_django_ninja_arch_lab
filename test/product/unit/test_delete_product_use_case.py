@@ -1,90 +1,102 @@
-from typing import cast
+"""Unit tests for DeleteProductUseCase."""
+
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
 from src.app.use_case.product.delete_product_use_case import DeleteProductUseCase
 from src.domain.entity.product_entity import Product
 from src.domain.enum.product_status import ProductStatus
-from src.platform.db.unit_of_work import AbstractUnitOfWork
-from test.shared.fakes import FakeProductsRepo, StubProductUnitOfWork
 
 
 def _build_product(product_id: int, name: str, status: ProductStatus) -> Product:
-    product = Product.create(
+    return Product(
+        id=product_id,
         name=name,
         description=f'{name} description',
         price=100,
         seller_id=1,
         is_active=True,
+        status=status,
     )
-    product.id = product_id
-    product.status = status
-    return product
 
 
 @pytest.mark.asyncio
 async def test_delete_product_returns_true_for_available_product():
-    # given
-    product_id = 1
-    product = _build_product(product_id, 'Available Product', ProductStatus.AVAILABLE)
-    repo = FakeProductsRepo(products_by_id={product_id: product})
-    uow = StubProductUnitOfWork(products_repo=repo)
-    use_case = DeleteProductUseCase(uow=cast(AbstractUnitOfWork, uow))
+    """Test deleting an available product returns True."""
+    # Given
+    product = _build_product(1, 'Available Product', ProductStatus.AVAILABLE)
+    mock_repo = Mock()
+    mock_repo.get_by_id = AsyncMock(return_value=product)
+    mock_repo.delete = AsyncMock(return_value=True)
 
-    # when
+    # Inject mock repo via constructor
+    use_case = DeleteProductUseCase(product_repo=mock_repo)
+
+    # When
     result = await use_case.delete(product_id=1)
 
-    # then
+    # Then
     assert result is True
-    assert repo.deleted_ids == [1]
-    assert uow.commit_called
+    mock_repo.get_by_id.assert_called_once_with(1)
+    mock_repo.delete.assert_called_once_with(1)
 
 
 @pytest.mark.asyncio
 async def test_delete_product_returns_false_when_not_found():
-    # given
-    repo = FakeProductsRepo(products_by_id={})
-    uow = StubProductUnitOfWork(products_repo=repo)
-    use_case = DeleteProductUseCase(uow=cast(AbstractUnitOfWork, uow))
+    """Test deleting a non-existent product returns False."""
+    # Given
+    mock_repo = Mock()
+    mock_repo.get_by_id = AsyncMock(return_value=None)
+    mock_repo.delete = AsyncMock()
 
-    # when
+    # Inject mock repo via constructor
+    use_case = DeleteProductUseCase(product_repo=mock_repo)
+
+    # When
     result = await use_case.delete(product_id=999)
 
-    # then
+    # Then
     assert result is False
-    assert repo.deleted_ids == []
-    assert not uow.commit_called
+    mock_repo.get_by_id.assert_called_once_with(999)
+    mock_repo.delete.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_delete_product_raises_for_reserved_status():
-    # given
-    product_id = 2
-    product = _build_product(product_id, 'Reserved Product', ProductStatus.RESERVED)
-    repo = FakeProductsRepo(products_by_id={product_id: product})
-    uow = StubProductUnitOfWork(products_repo=repo)
-    use_case = DeleteProductUseCase(uow=cast(AbstractUnitOfWork, uow))
+    """Test deleting a reserved product raises ValueError."""
+    # Given
+    product = _build_product(2, 'Reserved Product', ProductStatus.RESERVED)
+    mock_repo = Mock()
+    mock_repo.get_by_id = AsyncMock(return_value=product)
+    mock_repo.delete = AsyncMock()
 
-    # when / then
+    # Inject mock repo via constructor
+    use_case = DeleteProductUseCase(product_repo=mock_repo)
+
+    # When / Then
     with pytest.raises(ValueError, match='Cannot delete reserved product'):
         await use_case.delete(product_id=2)
 
-    assert repo.deleted_ids == []
-    assert not uow.commit_called
+    mock_repo.get_by_id.assert_called_once_with(2)
+    mock_repo.delete.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_delete_product_raises_for_sold_status():
-    # given
-    product_id = 3
-    product = _build_product(product_id, 'Sold Product', ProductStatus.SOLD)
-    repo = FakeProductsRepo(products_by_id={product_id: product})
-    uow = StubProductUnitOfWork(products_repo=repo)
-    use_case = DeleteProductUseCase(uow=cast(AbstractUnitOfWork, uow))
+    """Test deleting a sold product raises ValueError."""
+    # Given
+    product = _build_product(3, 'Sold Product', ProductStatus.SOLD)
+    mock_repo = Mock()
+    mock_repo.get_by_id = AsyncMock(return_value=product)
+    mock_repo.delete = AsyncMock()
 
-    # when / then
+    # Inject mock repo via constructor
+    use_case = DeleteProductUseCase(product_repo=mock_repo)
+
+    # When / Then
     with pytest.raises(ValueError, match='Cannot delete sold product'):
         await use_case.delete(product_id=3)
 
-    assert repo.deleted_ids == []
-    assert not uow.commit_called
+    mock_repo.get_by_id.assert_called_once_with(3)
+    mock_repo.delete.assert_not_called()

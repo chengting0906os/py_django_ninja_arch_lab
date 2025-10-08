@@ -1,27 +1,26 @@
-"""SQLAlchemy model for the user table."""
+"""Custom Django user model with role support."""
 
-from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 from src.domain.enum.user_role_enum import UserRole
-from src.platform.db.db_setting import Base
 
 
-class User(SQLAlchemyBaseUserTable[int], Base):
-    __tablename__ = 'user'
+class User(AbstractUser):
+    username = None  # type: ignore[assignment]
+    email = models.EmailField(unique=True)
+    role = models.CharField(
+        max_length=20,
+        # pyrefly: ignore  # not-iterable
+        choices=[(role.value, role.value) for role in UserRole],
+        default=UserRole.BUYER.value,
+    )
 
-    id: Mapped[int] = mapped_column(  # type: ignore[assignment]
-        Integer,
-        primary_key=True,
-        autoincrement=True,
-    )
-    name: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-    role: Mapped[str] = mapped_column(
-        String(20),
-        default=UserRole.BUYER,
-        nullable=False,
-    )
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS: list[str] = []
+
+    class Meta:  # type: ignore[override]
+        db_table = 'user'
+
+    def __str__(self):
+        return self.email

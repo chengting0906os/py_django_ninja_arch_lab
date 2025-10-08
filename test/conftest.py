@@ -1,134 +1,108 @@
-import asyncio
+"""Global pytest configuration."""
+
 import os
 from pathlib import Path
 
-from alembic import command
-from alembic.config import Config
+from django.contrib.auth import get_user_model
+from django.contrib.sessions.backends.db import SessionStore
 from dotenv import load_dotenv
-from fastapi.testclient import TestClient
+from ninja_extra.testing import TestAsyncClient
 import pytest
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine
 
 
-# Load environment variables from .env or .env.example
-env_file = '.env' if Path('.env').exists() else '.env.example'
+os.environ.setdefault('NINJA_SKIP_REGISTRY', '1')
+
+env_file = Path('.env') if Path('.env').exists() else Path('.env.example')
 load_dotenv(env_file)
 
-BASE_TEST_DB = os.getenv('POSTGRES_DB', 'shopping_test_db')
-WORKER_ID = os.getenv('PYTEST_XDIST_WORKER')
-TEST_DB_NAME = f'{BASE_TEST_DB}_{WORKER_ID}' if WORKER_ID else BASE_TEST_DB
-os.environ['POSTGRES_DB'] = TEST_DB_NAME
+# Configure unique test database for each pytest worker
+worker_id = os.environ.get('PYTEST_XDIST_WORKER', '')
+testrun_uid = os.environ.get('PYTEST_XDIST_TESTRUNUID', '')
 
-test_log_dir = Path(__file__).parent / 'logs'
-test_log_dir.mkdir(exist_ok=True)
-os.environ['LOG_DIR'] = str(test_log_dir)
-os.environ.setdefault('LOG_FILE_PREFIX', 'test_')
+if testrun_uid and worker_id:
+    test_db_suffix = f'{testrun_uid}_{worker_id}'
+elif worker_id:
+    test_db_suffix = f'{worker_id}'
+else:
+    test_db_suffix = f'{os.getpid()}'
 
-from src.main import app  # noqa: F403, E402
-from test.order.fixtures import *  # noqa: F403, E402, E402
-from test.order.integration.given import *  # noqa: F403, E402
-from test.order.integration.then import *  # noqa: F403, E402
-from test.order.integration.when import *  # noqa: F403, E402
-from test.product.fixtures import *  # noqa: F403, E402
-from test.product.integration.given import *  # noqa: F403, E402
-from test.product.integration.then import *  # noqa: F403, E402
-from test.product.integration.when import *  # noqa: F403, E402
-from test.pytest_bdd_ng_example.fixtures import *  # noqa: F403, E402
-from test.pytest_bdd_ng_example.given import *  # noqa: F403, E402
-from test.pytest_bdd_ng_example.then import *  # noqa: F403, E402
-from test.pytest_bdd_ng_example.when import *  # noqa: F403, E402
-from test.shared.steps.given import *  # noqa: F403, E402
-from test.shared.steps.then import *  # noqa: F403, E402
-from test.user.fixtures import *  # noqa: F403, E402
-from test.user.integration.steps.then import *  # noqa: F403, E402
-from test.user.integration.steps.when import *  # noqa: F403, E402
+os.environ.setdefault('TEST_DB_SUFFIX', test_db_suffix)
 
 
-DB_CONFIG = {
-    'user': os.getenv('POSTGRES_USER'),
-    'password': os.getenv('POSTGRES_PASSWORD'),
-    'host': os.getenv('POSTGRES_SERVER'),
-    'port': os.getenv('POSTGRES_PORT'),
-    'test_db': TEST_DB_NAME,
-}
-TEST_DATABASE_URL = f'postgresql+asyncpg://{DB_CONFIG["user"]}:{DB_CONFIG["password"]}@{DB_CONFIG["host"]}:{DB_CONFIG["port"]}/{DB_CONFIG["test_db"]}'
+User = get_user_model()
 
 
-@pytest.fixture
-def execute_sql_statement():
-    def _execute(statement: str, params: dict | None = None, fetch: bool = False):
-        async def _run():
-            engine = create_async_engine(TEST_DATABASE_URL)
-            async with engine.begin() as conn:
-                result = await conn.execute(text(statement), params or {})
-                if fetch:
-                    return [dict(row._mapping) for row in result]
-            await engine.dispose()
-            return None
+class SessionTestAsyncClient(TestAsyncClient):
+    """TestAsyncClient with session support for Django auth."""
 
-        return asyncio.run(_run())
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.session = SessionStore()
+        self.session.create()
 
-    return _execute
+    def _build_request(self, *args, **kwargs):
+        import os
 
+        from django.contrib.auth.models import AnonymousUser
 
-async def execute_sql(url: str, statements: list, **engine_kwargs):
-    engine = create_async_engine(url, **engine_kwargs)
-    async with engine.begin() as conn:
-        for stmt in statements:
-            await conn.execute(text(stmt))
-    await engine.dispose()
+        mock = super()._build_request(*args, **kwargs)
+        mock.session = self.session
 
+        # Directly load user (this is a sync method, safe to use sync DB access)
+        user_id = self.session.get('_auth_user_id')
 
-async def setup_test_database():
-    postgres_url = TEST_DATABASE_URL.replace(f'/{DB_CONFIG["test_db"]}', '/postgres')
-    engine = create_async_engine(postgres_url, isolation_level='AUTOCOMMIT')
-    async with engine.begin() as conn:
-        result = await conn.execute(
-            text(f"SELECT 1 FROM pg_database WHERE datname = '{DB_CONFIG['test_db']}'")
-        )
-        if not result.fetchone():
-            await conn.execute(text(f'CREATE DATABASE {DB_CONFIG["test_db"]}'))
-    await engine.dispose()
-    await execute_sql(TEST_DATABASE_URL, ['DROP SCHEMA public CASCADE', 'CREATE SCHEMA public'])
-    alembic_cfg = Config(Path(__file__).parent.parent / 'src/platform/alembic/alembic.ini')
-    alembic_cfg.set_main_option('sqlalchemy.url', TEST_DATABASE_URL.replace('+asyncpg', ''))
-    command.upgrade(alembic_cfg, 'head')
+        # Check if we're in async context
+        if os.environ.get('DJANGO_ALLOW_ASYNC_UNSAFE'):
+            # Already allowed, just query
+            if user_id:
+                try:
+                    mock.user = User.objects.get(pk=user_id)
+                except User.DoesNotExist:
+                    mock.user = AnonymousUser()
+            else:
+                mock.user = AnonymousUser()
+        else:
+            # Temporarily allow async unsafe for this operation
+            os.environ['DJANGO_ALLOW_ASYNC_UNSAFE'] = 'true'
+            try:
+                if user_id:
+                    try:
+                        mock.user = User.objects.get(pk=user_id)
+                    except User.DoesNotExist:
+                        mock.user = AnonymousUser()
+                else:
+                    mock.user = AnonymousUser()
+            finally:
+                del os.environ['DJANGO_ALLOW_ASYNC_UNSAFE']
 
-
-_cached_tables = None
-
-
-async def clean_all_tables():
-    global _cached_tables
-    engine = create_async_engine(TEST_DATABASE_URL)
-    async with engine.begin() as conn:
-        if _cached_tables is None:
-            result = await conn.execute(
-                text(
-                    "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename != 'alembic_version'"
-                )
-            )
-            _cached_tables = [row[0] for row in result]
-        if _cached_tables:
-            quoted_tables = [f'"{table}"' for table in _cached_tables]
-            await conn.execute(
-                text(f'TRUNCATE {", ".join(quoted_tables)} RESTART IDENTITY CASCADE')
-            )
-    await engine.dispose()
-
-
-def pytest_sessionstart(session):
-    asyncio.run(setup_test_database())
-
-
-@pytest.fixture(autouse=True)
-async def clean_database():
-    await clean_all_tables()
-    yield
+        return mock
 
 
 @pytest.fixture(scope='session')
-def client():
-    with TestClient(app) as test_client:
-        yield test_client
+def api_instance():
+    from src.platform.api import api
+
+    return api
+
+
+@pytest.fixture
+def client(api_instance, db):
+    """Test async client with API instance and database access."""
+    client = SessionTestAsyncClient(api_instance)
+    yield client
+    # Close database connections after each test
+    from django.db import connections
+
+    for conn in connections.all():
+        conn.close()
+
+
+@pytest.fixture(scope='session', autouse=True)
+def cleanup():
+    yield
+    os.environ.pop('NINJA_SKIP_REGISTRY', None)
+    # Close all database connections at session end
+    from django.db import connections
+
+    for conn in connections.all():
+        conn.close()

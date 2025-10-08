@@ -1,20 +1,17 @@
-from collections.abc import Callable
-
 import pytest
 
-from src.domain.entity.product_entity import Product
-from test.shared.fakes import FakeProductsRepo, StubProductUnitOfWork
-
 
 @pytest.fixture
-def product_state():
-    return {}
+def product_state(db):
+    # Clean up products and users before each test
+    from src.driven_adapter.model.product_model import ProductModel
+    from src.driven_adapter.model.user_model import User
 
+    ProductModel.objects.all().delete()
+    User.objects.all().delete()
 
-@pytest.fixture
-def stub_product_uow_factory() -> Callable[[Product], StubProductUnitOfWork]:
-    def _factory(created_product: Product) -> StubProductUnitOfWork:
-        repo = FakeProductsRepo(created_product=created_product)
-        return StubProductUnitOfWork(products_repo=repo)
+    yield {}
 
-    return _factory
+    # Clean up after test
+    ProductModel.objects.all().delete()
+    User.objects.all().delete()

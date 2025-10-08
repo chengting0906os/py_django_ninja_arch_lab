@@ -73,51 +73,6 @@ class FakeUsersRepo:
         return self._users.get(user_id)
 
 
-class StubProductUnitOfWork:
-    def __init__(self, products_repo: FakeProductsRepo):
-        self.products = products_repo
-        self.commit_called = False
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *args):
-        return False
-
-    async def commit(self):
-        self.commit_called = True
-
-    async def rollback(self):
-        pass
-
-
-class StubOrderUnitOfWork:
-    def __init__(
-        self,
-        users_repo: FakeUsersRepo,
-        products_repo: FakeProductsRepo,
-        orders_repo: FakeOrdersRepo,
-    ):
-        self.users = users_repo
-        self.products = products_repo
-        self.orders = orders_repo
-        self.commit_called = False
-        self.rollback_called = False
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *args):
-        self.rollback_called = True
-        return False
-
-    async def commit(self):
-        self.commit_called = True
-
-    async def rollback(self):
-        self.rollback_called = True
-
-
 class FakeEmailDispatcher(IEmailDispatcher):
     def __init__(self):
         self.order_confirmation_calls: List[dict] = []

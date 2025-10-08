@@ -1,36 +1,37 @@
-from fastapi.testclient import TestClient
+from ninja_extra.testing import TestAsyncClient
+import pytest
 
 from src.platform.constant.route_constant import USER_CREATE
 from test.util_constant import DEFAULT_PASSWORD, TEST_EMAIL
 
 
+@pytest.mark.django_db(transaction=True)
 class TestUserAPI:
-    def test_create_user(self, client: TestClient):
+    @pytest.mark.asyncio
+    async def test_create_user(self, client: TestAsyncClient):
         email = TEST_EMAIL
         user_data = {
             'email': email,
             'password': DEFAULT_PASSWORD,
-            'name': 'John Doe',
             'role': 'buyer',
         }
-        response = client.post(USER_CREATE, json=user_data)
+        response = await client.post(USER_CREATE, json=user_data)  # pyrefly: ignore[async-error]
         assert response.status_code == 201
         data = response.json()
         assert data['email'] == email
         assert data['role'] == 'buyer'
-        assert data['name'] == 'John Doe'
         assert 'id' in data
         assert 'password' not in data
 
-    def test_create_another_user(self, client: TestClient):
+    @pytest.mark.asyncio
+    async def test_create_another_user(self, client: TestAsyncClient):
         user_data = {
-            'email': TEST_EMAIL,
+            'email': 'another@example.com',
             'password': DEFAULT_PASSWORD,
-            'name': 'Jane Smith',
             'role': 'seller',
         }
-        response = client.post(USER_CREATE, json=user_data)
+        response = await client.post(USER_CREATE, json=user_data)  # pyrefly: ignore[async-error]
         assert response.status_code == 201
         data = response.json()
-        assert data['email'] == TEST_EMAIL
+        assert data['email'] == 'another@example.com'
         assert data['role'] == 'seller'

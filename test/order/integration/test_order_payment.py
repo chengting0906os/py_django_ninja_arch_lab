@@ -1,0 +1,230 @@
+"""Integration tests for order payment and cancellation."""
+
+from ninja_extra.testing import TestAsyncClient
+import pytest
+
+from test.order.integration.util import (
+    given_authenticated_as,
+    given_orders_exist,
+    given_products_exist,
+    given_users_exist,
+    then_product_status_should_be,
+)
+
+
+@pytest.mark.django_db(transaction=True)
+class TestOrderPayment:
+    """Test order payment functionality."""
+
+    async def test_successfully_pay_for_order(self, client: TestAsyncClient):
+        """Test successfully paying for a pending payment order."""
+        # Given users exist
+        users = await given_users_exist(
+            client,
+            [
+                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
+                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+            ],
+        )
+        seller_id = users['seller@test.com']
+        buyer_id = users['buyer@test.com']
+
+        # And product exists
+        products = await given_products_exist(
+            client, seller_id, [{'name': 'Product A', 'price': 1000, 'status': 'reserved'}]
+        )
+        product_id = products[0]
+
+        # And order exists
+        orders = await given_orders_exist(
+            client,
+            [
+                {
+                    'buyer_id': buyer_id,
+                    'seller_id': seller_id,
+                    'product_id': product_id,
+                    'price': 1000,
+                    'status': 'pending_payment',
+                    'paid_at': None,
+                }
+            ],
+        )
+        order_id = orders[0]
+
+        # When buyer pays for the order
+        given_authenticated_as(client, buyer_id)
+        # pyrefly: ignore  # async-error
+        response = await client.post(
+            f'/order/{order_id}/pay',
+            json={'card_number': '4242424242424242'},
+        )
+
+        # Then
+        assert response.status_code == 200, (
+            f'Expected 200, got {response.status_code}: {response.json()}'
+        )
+
+        payment_result = response.json()
+        assert payment_result['status'] == 'paid'
+        assert payment_result['order_id'] == order_id
+        assert 'payment_id' in payment_result
+        assert payment_result['payment_id'].startswith('PAY_MOCK_')
+        assert payment_result['paid_at'] is not None
+
+        # Verify order status is paid
+        # pyrefly: ignore  # async-error
+        response = await client.get(f'/order/{order_id}')
+        assert response.status_code == 200
+        order = response.json()
+        assert order['status'] == 'paid'
+        assert order['paid_at'] is not None
+        assert order['created_at'] is not None
+
+        # Verify product status is sold
+        await then_product_status_should_be(product_id, 'sold')
+
+    async def test_cannot_pay_for_already_paid_order(self, client: TestAsyncClient):
+        """Test that paying for an already paid order fails."""
+        # Given users and order exist
+        users = await given_users_exist(
+            client,
+            [
+                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
+                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+            ],
+        )
+        seller_id = users['seller@test.com']
+        buyer_id = users['buyer@test.com']
+
+        products = await given_products_exist(
+            client, seller_id, [{'name': 'Product A', 'price': 1000, 'status': 'sold'}]
+        )
+        product_id = products[0]
+
+        orders = await given_orders_exist(
+            client,
+            [
+                {
+                    'buyer_id': buyer_id,
+                    'seller_id': seller_id,
+                    'product_id': product_id,
+                    'price': 1000,
+                    'status': 'paid',
+                    'paid_at': 'not_null',
+                }
+            ],
+        )
+        order_id = orders[0]
+
+        # When buyer tries to pay again
+        given_authenticated_as(client, buyer_id)
+        # pyrefly: ignore  # async-error
+        response = await client.post(
+            f'/order/{order_id}/pay',
+            json={'card_number': '4242424242424242'},
+        )
+
+        # Then
+        assert response.status_code == 400
+        error_data = response.json()
+        assert 'Order already paid' in str(
+            error_data.get('detail') or error_data.get('message', '')
+        )
+
+    async def test_cannot_pay_for_cancelled_order(self, client: TestAsyncClient):
+        """Test that paying for a cancelled order fails."""
+        # Given users and order exist
+        users = await given_users_exist(
+            client,
+            [
+                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
+                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+            ],
+        )
+        seller_id = users['seller@test.com']
+        buyer_id = users['buyer@test.com']
+
+        products = await given_products_exist(
+            client, seller_id, [{'name': 'Product A', 'price': 1000, 'status': 'available'}]
+        )
+        product_id = products[0]
+
+        orders = await given_orders_exist(
+            client,
+            [
+                {
+                    'buyer_id': buyer_id,
+                    'seller_id': seller_id,
+                    'product_id': product_id,
+                    'price': 1000,
+                    'status': 'cancelled',
+                    'paid_at': None,
+                }
+            ],
+        )
+        order_id = orders[0]
+
+        # When buyer tries to pay
+        given_authenticated_as(client, buyer_id)
+        # pyrefly: ignore  # async-error
+        response = await client.post(
+            f'/order/{order_id}/pay',
+            json={'card_number': '4242424242424242'},
+        )
+
+        # Then
+        assert response.status_code == 400
+        error_data = response.json()
+        assert 'Cannot pay for cancelled order' in str(
+            error_data.get('detail') or error_data.get('message', '')
+        )
+
+    async def test_only_buyer_can_pay_for_order(self, client: TestAsyncClient):
+        """Test that only the buyer can pay for their order."""
+        # Given users and order exist
+        users = await given_users_exist(
+            client,
+            [
+                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
+                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+                {'email': 'other@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+            ],
+        )
+        seller_id = users['seller@test.com']
+        buyer_id = users['buyer@test.com']
+        other_id = users['other@test.com']
+
+        products = await given_products_exist(
+            client, seller_id, [{'name': 'Product A', 'price': 1000, 'status': 'reserved'}]
+        )
+        product_id = products[0]
+
+        orders = await given_orders_exist(
+            client,
+            [
+                {
+                    'buyer_id': buyer_id,
+                    'seller_id': seller_id,
+                    'product_id': product_id,
+                    'price': 1000,
+                    'status': 'pending_payment',
+                    'paid_at': None,
+                }
+            ],
+        )
+        order_id = orders[0]
+
+        # When another user tries to pay
+        given_authenticated_as(client, other_id)
+        # pyrefly: ignore  # async-error
+        response = await client.post(
+            f'/order/{order_id}/pay',
+            json={'card_number': '4242424242424242'},
+        )
+
+        # Then
+        assert response.status_code == 403
+        error_data = response.json()
+        assert 'Only the buyer can pay for this order' in str(
+            error_data.get('detail') or error_data.get('message', '')
+        )

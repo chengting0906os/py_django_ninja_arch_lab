@@ -1,8 +1,8 @@
-# py_fastapi_arch_lab
+# py_django_ninja_arch_lab
 
 ## This repository is a lab for **Clean Architecture**, **Domain-Driven Design (DDD)**, and disciplined testing (TDD/BDD).
 
-It implements Clean Architecture via a hexagonal (ports & adapters) structure: **driving adapters** handle inbound requests (FastAPI controllers), while **driven adapters** connect to outbound dependencies (SQLAlchemy repositories, auth services).
+It implements Clean Architecture via a hexagonal (ports & adapters) structure: **driving adapters** handle inbound requests (Django Ninja Extra controllers), while **driven adapters** connect to outbound dependencies (Django ORM repositories, external services).
 
 ## Clean Architecture Overview
 
@@ -17,11 +17,9 @@ src/
 ├─ driven_adapter/   # Outbound adapters implementing app interfaces
 │                    # (repositories, external APIs, message queues)
 │
-├─ driving_adapter/  # Inbound adapters exposing app functionality
-│                    # (REST controllers, GraphQL resolvers, CLI commands)
+├─ driving_adapter/  # Legacy FastAPI inbound adapters (kept for reference during migration)
 │
-└─ platform/         # Shared infrastructure concerns
-                     # (config, database setup, logging, DI container)
+└─ platform/         # Django platform: settings, session auth, logging, Ninja controllers
 ```
 
 ---
@@ -63,6 +61,12 @@ src/domain/
   - As a buyer, I can view my orders
 
 Features are intentionally lightweight; focus on the architecture patterns.
+
+### Current Migration Status
+
+- ✅ Django project scaffolded under `src/platform`
+- ✅ User module running through Django Ninja Extra with session authentication
+- 🔄 Product & Order controllers pending migration from FastAPI
 
 ---
 

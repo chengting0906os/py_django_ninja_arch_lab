@@ -1,33 +1,38 @@
 """Order database models."""
 
-from datetime import datetime
-from typing import Optional
+from django.conf import settings
+from django.db import models
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
-
-from src.platform.db.db_setting import Base
+from src.domain.enum.order_status import OrderStatus
 
 
-class OrderModel(Base):
-    __tablename__ = 'order'
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    buyer_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'))
-    seller_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id'))
-    product_id: Mapped[int] = mapped_column(Integer, ForeignKey('product.id'))
-    price: Mapped[int] = mapped_column(Integer, nullable=False)
-    status: Mapped[str] = mapped_column(String(20), default='pending_payment', nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+class OrderModel(models.Model):
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='buyer_orders',
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='seller_orders',
     )
-    paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    product = models.ForeignKey(
+        'driven_adapter.ProductModel',
+        on_delete=models.CASCADE,
+        related_name='orders',
+    )
+    price = models.PositiveIntegerField()
+    status = models.CharField(
+        max_length=20,
+        # pyrefly: ignore  # not-iterable
+        choices=[(status.value, status.value) for status in OrderStatus],
+        default=OrderStatus.PENDING_PAYMENT.value,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
 
-    #
-    buyer = relationship('User', foreign_keys=[buyer_id], lazy='select')
-    seller = relationship('User', foreign_keys=[seller_id], lazy='select')
-    product = relationship('ProductModel', lazy='select')
+    class Meta:
+        db_table = 'order'
+        ordering = ['id']

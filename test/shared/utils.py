@@ -1,8 +1,16 @@
 from typing import Any, Dict
 
-from fastapi.testclient import TestClient
+import pytest
+from ninja_extra.testing import TestAsyncClient
 
 from src.platform.constant.route_constant import AUTH_LOGIN
+
+
+def get_response_text(response) -> str:
+    """Get text content from response (works for both Django and other responses)."""
+    if hasattr(response, 'content'):
+        return response.content.decode('utf-8')
+    return getattr(response, 'text', '')
 
 
 def extract_table_data(step) -> Dict[str, Any]:
@@ -17,28 +25,33 @@ def extract_single_value(step, row_index: int = 0, col_index: int = 0) -> str:
     return rows[row_index].cells[col_index].value
 
 
-def login_user(client: TestClient, email: str, password: str) -> Any:
-    """Helper function to login a user and set cookies."""
+def login_user(client: TestAsyncClient, email: str, password: str) -> Any:
+    """Helper function to login a user via Django session."""
     login_response = client.post(
         AUTH_LOGIN,
-        data={'username': email, 'password': password},
-        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        json={'email': email, 'password': password},
     )
-    assert login_response.status_code == 200, f'Login failed: {login_response.text}'
-    if 'fastapiusersauth' in login_response.cookies:
-        client.cookies.set('fastapiusersauth', login_response.cookies['fastapiusersauth'])
+    if login_response.status_code != 200:
+        message = (
+            login_response.content.decode('utf-8')
+            if hasattr(login_response, 'content')
+            else getattr(login_response, 'reason_phrase', '')
+        )
+        pytest.fail(f'Login failed: {message}')
+
     return login_response
 
 
 def assert_response_status(response, expected_status: int, message: str | None = None):
     """Helper function to assert response status code."""
     assert response.status_code == expected_status, (
-        message or f'Expected {expected_status}, got {response.status_code}: {response.text}'
+        message
+        or f'Expected {expected_status}, got {response.status_code}: {get_response_text(response)}'
     )
 
 
 def create_user(
-    client: TestClient, email: str, password: str, name: str, role: str
+    client: TestAsyncClient, email: str, password: str, role: str
 ) -> Dict[str, Any] | None:
     """Helper function to create a user. Returns None if user already exists."""
     from src.platform.constant.route_constant import USER_CREATE
@@ -46,7 +59,6 @@ def create_user(
     user_data = {
         'email': email,
         'password': password,
-        'name': name,
         'role': role,
     }
     response = client.post(USER_CREATE, json=user_data)
@@ -60,7 +72,7 @@ def create_user(
 
 
 def create_product(
-    client: TestClient, name: str, description: str, price: int, is_active: bool = True
+    client: TestAsyncClient, name: str, description: str, price: int, is_active: bool = True
 ) -> Dict[str, Any]:
     """Helper function to create a product."""
     from src.platform.constant.route_constant import PRODUCT_BASE

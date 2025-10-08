@@ -1,111 +1,197 @@
-from typing import cast
+"""Unit tests for CreateOrderUseCase."""
+
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
 from src.app.use_case.order.create_order_use_case import CreateOrderUseCase
+from src.domain.entity.order_entity import Order
 from src.domain.entity.product_entity import Product
 from src.domain.entity.user_entity import User
+from src.domain.enum.order_status import OrderStatus
 from src.domain.enum.product_status import ProductStatus
 from src.domain.enum.user_role_enum import UserRole
-from src.platform.db.unit_of_work import AbstractUnitOfWork
 from src.platform.exception.exceptions import DomainError
 
 
-def _build_product(name: str, seller_id: int, price: int, is_active: bool = True) -> Product:
-    product = Product.create(
-        name=name,
-        description=f'{name} description',
-        price=price,
-        seller_id=seller_id,
-        is_active=is_active,
-    )
-    product.id = 100
-    return product
-
-
-def _build_user(user_id: int, email: str, name: str, role: UserRole) -> User:
-    return User(id=user_id, email=email, name=name, role=role)
-
-
 @pytest.mark.asyncio
-async def test_create_order_successfully_reserves_product_and_sends_emails(
-    fake_users_repo_factory,
-    fake_products_repo_factory,
-    fake_orders_repo_factory,
-    order_uow_factory,
-    fake_email_dispatcher,
-):
-    # given
-    buyer = _build_user(1, 'buyer@example.com', 'Buyer One', UserRole.BUYER)
-    seller = _build_user(2, 'seller@example.com', 'Seller One', UserRole.SELLER)
-    product = _build_product('Test Product', seller_id=seller.id, price=500)
+async def test_create_order_returns_created_order():
+    """Test that create_order returns the created order with correct values."""
+    # Mock repositories
+    mock_user_repo = Mock()
+    mock_product_repo = Mock()
+    mock_order_repo = Mock()
+    mock_email_dispatcher = Mock()
 
-    users_repo = fake_users_repo_factory({buyer.id: buyer})
-    products_repo = fake_products_repo_factory({product.id: product}, {product.id: seller})
-    orders_repo = fake_orders_repo_factory(created_order_id=55)
-    uow = order_uow_factory(users_repo, products_repo, orders_repo)
-    use_case = CreateOrderUseCase(
-        uow=cast(AbstractUnitOfWork, uow),
-        email_dispatcher=fake_email_dispatcher,
+    # Setup test data
+    buyer = User(id=1, email='buyer@test.com', name='Buyer', role=UserRole.BUYER)
+    seller = User(id=2, email='seller@test.com', name='Seller', role=UserRole.SELLER)
+    product = Product(
+        id=10,
+        name='Test Product',
+        description='Test',
+        price=1000,
+        seller_id=seller.id,
+        is_active=True,
+        status=ProductStatus.AVAILABLE,
+    )
+    created_order = Order(
+        id=100,
+        buyer_id=buyer.id,
+        seller_id=seller.id,
+        product_id=product.id,
+        price=product.price,
+        status=OrderStatus.PENDING_PAYMENT,
     )
 
-    # when
+    # Setup mocks
+    mock_user_repo.get_by_id = AsyncMock(return_value=buyer)
+    mock_product_repo.get_by_id_with_seller = AsyncMock(return_value=(product, seller))
+    mock_product_repo.update = AsyncMock(return_value=product)
+    mock_order_repo.create = AsyncMock(return_value=created_order)
+    mock_email_dispatcher.send_order_confirmation = AsyncMock()
+    mock_email_dispatcher.notify_seller_new_order = AsyncMock()
+
+    # Create use case
+    use_case = CreateOrderUseCase(
+        email_dispatcher=mock_email_dispatcher,
+        user_repo=mock_user_repo,
+        product_repo=mock_product_repo,
+        order_repo=mock_order_repo,
+    )
+
+    # Execute
     result = await use_case.create_order(buyer_id=buyer.id, product_id=product.id or 0)
 
-    # then
-    assert result.id == 55
-    assert orders_repo.created_orders, 'Order repository should receive a new order'
-    created_order = orders_repo.created_orders[0]
-    assert created_order.buyer_id == buyer.id
-    assert created_order.product_id == product.id
-    assert uow.commit_called
-    assert products_repo.updated_products
-    assert products_repo.updated_products[0].status == ProductStatus.RESERVED
-    assert fake_email_dispatcher.order_confirmation_calls == [
-        {
-            'buyer_email': buyer.email,
-            'order_id': 55,
-            'product_name': product.name,
-            'price': product.price,
-        }
-    ]
-    assert fake_email_dispatcher.notify_seller_calls == [
-        {
-            'seller_email': seller.email,
-            'order_id': 55,
-            'product_name': product.name,
-            'buyer_name': buyer.name,
-            'price': product.price,
-        }
-    ]
+    # Assert
+    assert result.id == 100
+    assert result.buyer_id == buyer.id
+    assert result.seller_id == seller.id
+    assert result.product_id == product.id
+    assert result.price == 1000
+    assert result.status == OrderStatus.PENDING_PAYMENT
+
+    # Verify repo calls
+    mock_user_repo.get_by_id.assert_called_once_with(buyer.id)
+    mock_product_repo.get_by_id_with_seller.assert_called_once_with(product.id)
+    mock_order_repo.create.assert_called_once()
+    mock_product_repo.update.assert_called_once()
+
+    # Verify emails sent
+    mock_email_dispatcher.send_order_confirmation.assert_called_once()
+    mock_email_dispatcher.notify_seller_new_order.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_create_order_raises_when_buyer_missing(
-    fake_users_repo_factory,
-    fake_products_repo_factory,
-    fake_orders_repo_factory,
-    order_uow_factory,
-    fake_email_dispatcher,
-):
-    # given
-    seller = _build_user(2, 'seller@example.com', 'Seller One', UserRole.SELLER)
-    product = _build_product('Test Product', seller_id=seller.id, price=500)
+async def test_create_order_raises_error_when_buyer_not_found():
+    """Test that create_order raises DomainError when buyer is not found."""
+    # Mock repositories
+    mock_user_repo = Mock()
+    mock_product_repo = Mock()
+    mock_order_repo = Mock()
+    mock_email_dispatcher = Mock()
 
-    users_repo = fake_users_repo_factory({})  # Buyer not found
-    products_repo = fake_products_repo_factory({product.id: product}, {product.id: seller})
-    orders_repo = fake_orders_repo_factory(created_order_id=55)
-    uow = order_uow_factory(users_repo, products_repo, orders_repo)
+    # Setup mocks
+    mock_user_repo.get_by_id = AsyncMock(return_value=None)
+
+    # Create use case
     use_case = CreateOrderUseCase(
-        uow=cast(AbstractUnitOfWork, uow),
-        email_dispatcher=fake_email_dispatcher,
+        email_dispatcher=mock_email_dispatcher,
+        user_repo=mock_user_repo,
+        product_repo=mock_product_repo,
+        order_repo=mock_order_repo,
     )
 
-    # when
-    with pytest.raises(DomainError) as exc_info:
-        await use_case.create_order(buyer_id=1, product_id=product.id or 0)
+    # Execute and assert
+    with pytest.raises(DomainError, match='Buyer not found'):
+        await use_case.create_order(buyer_id=999, product_id=10)
 
-    # then
-    assert 'Buyer not found' in str(exc_info.value)
-    assert not orders_repo.created_orders
-    assert not uow.commit_called
+    # Verify no order was created
+    mock_order_repo.create.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_create_order_raises_error_when_product_not_found():
+    """Test that create_order raises DomainError when product is not found."""
+    # Mock repositories
+    mock_user_repo = Mock()
+    mock_product_repo = Mock()
+    mock_order_repo = Mock()
+    mock_email_dispatcher = Mock()
+
+    # Setup test data
+    buyer = User(id=1, email='buyer@test.com', name='Buyer', role=UserRole.BUYER)
+
+    # Setup mocks
+    mock_user_repo.get_by_id = AsyncMock(return_value=buyer)
+    mock_product_repo.get_by_id_with_seller = AsyncMock(return_value=(None, None))
+
+    # Create use case
+    use_case = CreateOrderUseCase(
+        email_dispatcher=mock_email_dispatcher,
+        user_repo=mock_user_repo,
+        product_repo=mock_product_repo,
+        order_repo=mock_order_repo,
+    )
+
+    # Execute and assert
+    with pytest.raises(DomainError, match='Product not found'):
+        await use_case.create_order(buyer_id=buyer.id, product_id=999)
+
+    # Verify no order was created
+    mock_order_repo.create.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_create_order_reserves_product():
+    """Test that create_order changes product status to RESERVED."""
+    # Mock repositories
+    mock_user_repo = Mock()
+    mock_product_repo = Mock()
+    mock_order_repo = Mock()
+    mock_email_dispatcher = Mock()
+
+    # Setup test data
+    buyer = User(id=1, email='buyer@test.com', name='Buyer', role=UserRole.BUYER)
+    seller = User(id=2, email='seller@test.com', name='Seller', role=UserRole.SELLER)
+    product = Product(
+        id=10,
+        name='Test Product',
+        description='Test',
+        price=1000,
+        seller_id=seller.id,
+        is_active=True,
+        status=ProductStatus.AVAILABLE,
+    )
+    created_order = Order(
+        id=100,
+        buyer_id=buyer.id,
+        seller_id=seller.id,
+        product_id=product.id,
+        price=product.price,
+        status=OrderStatus.PENDING_PAYMENT,
+    )
+
+    # Setup mocks
+    mock_user_repo.get_by_id = AsyncMock(return_value=buyer)
+    mock_product_repo.get_by_id_with_seller = AsyncMock(return_value=(product, seller))
+    mock_product_repo.update = AsyncMock(return_value=product)
+    mock_order_repo.create = AsyncMock(return_value=created_order)
+    mock_email_dispatcher.send_order_confirmation = AsyncMock()
+    mock_email_dispatcher.notify_seller_new_order = AsyncMock()
+
+    # Create use case
+    use_case = CreateOrderUseCase(
+        email_dispatcher=mock_email_dispatcher,
+        user_repo=mock_user_repo,
+        product_repo=mock_product_repo,
+        order_repo=mock_order_repo,
+    )
+
+    # Execute
+    await use_case.create_order(buyer_id=buyer.id, product_id=product.id or 0)
+
+    # Verify product was updated with RESERVED status
+    mock_product_repo.update.assert_called_once()
+    updated_product = mock_product_repo.update.call_args[0][0]
+    assert updated_product.status == ProductStatus.RESERVED

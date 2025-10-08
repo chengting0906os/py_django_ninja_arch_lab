@@ -14,5 +14,5 @@ class User:
 
     id: int
     email: str
-    name: str
+    name: str  # Optional: defaults to email in repo implementation
     role: UserRole
