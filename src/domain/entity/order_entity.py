@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 import attrs
+from django.utils import timezone
 
 from src.domain.enum.order_status import OrderStatus
 from src.platform.exception.exceptions import DomainError
@@ -25,15 +26,15 @@ class Order:
     status: OrderStatus = attrs.field(
         default=OrderStatus.PENDING_PAYMENT, validator=attrs.validators.instance_of(OrderStatus)
     )
-    created_at: datetime = attrs.field(factory=datetime.now)
-    updated_at: datetime = attrs.field(factory=datetime.now)
+    created_at: datetime = attrs.field(factory=timezone.now)
+    updated_at: datetime = attrs.field(factory=timezone.now)
     paid_at: Optional[datetime] = None
     id: Optional[int] = None
 
     @classmethod
     @Logger.io
     def create(cls, buyer_id: int, seller_id: int, product_id: int, price: int) -> 'Order':
-        now = datetime.now()
+        now = timezone.now()
         return cls(
             buyer_id=buyer_id,
             seller_id=seller_id,
@@ -48,10 +49,10 @@ class Order:
 
     @Logger.io
     def mark_as_paid(self) -> 'Order':
-        now = datetime.now()
+        now = timezone.now()
         return attrs.evolve(self, status=OrderStatus.PAID, paid_at=now, updated_at=now)
 
     @Logger.io
     def cancel(self) -> 'Order':
-        now = datetime.now()
+        now = timezone.now()
         return attrs.evolve(self, status=OrderStatus.CANCELLED, updated_at=now)

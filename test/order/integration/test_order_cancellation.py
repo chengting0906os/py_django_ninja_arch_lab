@@ -4,7 +4,8 @@ import pytest
 from ninja_extra.testing import TestAsyncClient
 
 from test.order.integration.util import (
-    given_authenticated_as,
+    given_logged_in_as_buyer,
+    given_logged_in_as_seller,
     given_orders_exist,
     given_products_exist,
     given_users_exist,
@@ -62,7 +63,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When buyer cancels the order
-        given_authenticated_as(client, buyer_id)
+        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -124,7 +125,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When buyer tries to cancel
-        given_authenticated_as(client, buyer_id)
+        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -189,7 +190,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When buyer tries to cancel again
-        given_authenticated_as(client, buyer_id)
+        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -228,7 +229,7 @@ class TestOrderCancellation:
         )
         seller_id = users['seller@test.com']
         buyer_id = users['buyer@test.com']
-        another_id = users['another@test.com']
+        _ = users['another@test.com']
 
         products = await given_products_exist(
             client, seller_id, [{'name': 'Test Product', 'price': 2500, 'status': 'reserved'}]
@@ -251,7 +252,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When another user tries to cancel
-        given_authenticated_as(client, another_id)
+        await given_logged_in_as_buyer(client, 'another@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -316,7 +317,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When seller tries to cancel
-        given_authenticated_as(client, seller_id)
+        await given_logged_in_as_seller(client, 'seller@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -361,7 +362,7 @@ class TestOrderCancellation:
             ],
         )
         seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        _ = users['buyer@test.com']
 
         # And product exists
         products = await given_products_exist(
@@ -370,7 +371,7 @@ class TestOrderCancellation:
         product_id = products[0]
 
         # When buyer tries to cancel non-existent order
-        given_authenticated_as(client, buyer_id)
+        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.delete('/order/99999')
 

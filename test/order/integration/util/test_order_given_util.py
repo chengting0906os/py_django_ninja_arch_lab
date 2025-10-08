@@ -1,10 +1,13 @@
 """Given helpers for order integration tests."""
 
+from datetime import datetime, timezone
 import re
 
 from asgiref.sync import sync_to_async
 from ninja_extra.testing import TestAsyncClient
 
+from src.driven_adapter.model.order_model import OrderModel
+from src.driven_adapter.model.product_model import ProductModel
 from src.platform.constant.route_constant import AUTH_LOGIN, PRODUCT_CREATE, USER_CREATE
 
 
@@ -66,22 +69,35 @@ async def given_buyer_exists(client: TestAsyncClient, email: str, password: str)
     return response.json()['id']
 
 
-async def given_logged_in_as_buyer(client: TestAsyncClient, email: str, password: str) -> int:
-    """Create and login as buyer, return user id."""
-    user_id = await given_buyer_exists(client, email, password)
+async def login_as(client: TestAsyncClient, email: str, password: str):
+    """Login as user. Call this before each authenticated request."""
     login_data = {'email': email, 'password': password}
     response = await client.post(AUTH_LOGIN, json=login_data)  # pyrefly: ignore[async-error]
-    assert response.status_code == 200
+    assert response.status_code == 200, f'Failed to login: {response.json()}'
+
+
+async def given_logged_in_as_buyer(client: TestAsyncClient, email: str, password: str) -> int:
+    """Login as buyer (create if not exists), return user id."""
+    # Try to create, ignore if already exists
+    buyer_data = {'email': email, 'password': password, 'role': 'buyer'}
+    response = await client.post(USER_CREATE, json=buyer_data)  # pyrefly: ignore[async-error]
+    user_id = response.json()['id'] if response.status_code == 201 else 0
+
+    # Login to authenticate
+    await login_as(client, email, password)
     return user_id
 
 
 async def given_logged_in_as_seller(client: TestAsyncClient, email: str, password: str) -> int:
-    """Login as existing seller, return user id."""
-    login_data = {'email': email, 'password': password}
-    response = await client.post(AUTH_LOGIN, json=login_data)  # pyrefly: ignore[async-error]
-    assert response.status_code == 200
-    # Get user id from response
-    return response.json()['id']
+    """Login as seller (create if not exists), return user id."""
+    # Try to create, ignore if already exists
+    seller_data = {'email': email, 'password': password, 'role': 'seller'}
+    response = await client.post(USER_CREATE, json=seller_data)  # pyrefly: ignore[async-error]
+    user_id = response.json()['id'] if response.status_code == 201 else 0
+
+    # Login to authenticate
+    await login_as(client, email, password)
+    return user_id
 
 
 async def given_users_exist(client: TestAsyncClient, users_data: list[dict]) -> dict[str, int]:
@@ -110,7 +126,6 @@ async def given_products_exist(
     client: TestAsyncClient, seller_id: int, products_data: list[dict]
 ) -> list[int]:
     """Create multiple products for a seller and return list of product_ids."""
-    from src.driven_adapter.model.product_model import ProductModel
 
     product_ids = []
 
@@ -132,9 +147,6 @@ async def given_products_exist(
 
 async def given_orders_exist(client: TestAsyncClient, orders_data: list[dict]) -> list[int]:
     """Create multiple orders and return list of order_ids."""
-    from datetime import datetime, timezone
-
-    from src.driven_adapter.model.order_model import OrderModel
 
     order_ids = []
 
@@ -157,12 +169,3 @@ async def given_orders_exist(client: TestAsyncClient, orders_data: list[dict]) -
         order_ids.append(order_model.id)
 
     return order_ids
-
-
-def given_authenticated_as(client: TestAsyncClient, user_id: int):
-    """Set the session to authenticate as the given user_id."""
-    from django.contrib.auth import SESSION_KEY
-
-    # Just set the session data, no need to save
-    # The session will be read by _build_request
-    client.session[SESSION_KEY] = str(user_id)

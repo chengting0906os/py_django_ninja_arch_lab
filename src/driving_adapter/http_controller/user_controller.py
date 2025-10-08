@@ -6,6 +6,7 @@ from django.contrib.auth import alogout, get_user_model
 from django.http import HttpRequest, HttpResponse
 from ninja_extra import ControllerBase, api_controller, http_delete, http_get, http_post, http_put
 
+from src.domain.enum.user_role_enum import UserRole
 from src.driving_adapter.http_controller.schema.user_schema import (
     ErrorResponse,
     IdOut,
@@ -14,7 +15,6 @@ from src.driving_adapter.http_controller.schema.user_schema import (
     UserLoginIn,
     UserOut,
 )
-from src.domain.enum.user_role_enum import UserRole
 from src.platform.exception.exceptions import DomainError
 from src.platform.logging.loguru_io import Logger
 
@@ -60,6 +60,7 @@ class UserController(ControllerBase):
     @Logger.io
     async def create_user(self, payload: UserIn) -> UserOut | HttpResponse:
         from asgiref.sync import sync_to_async
+        from django.contrib.auth.models import Group
 
         if await sync_to_async(UserModel.objects.filter(email=payload.email).exists)():
             raise DomainError('Email has been existed')
@@ -74,6 +75,11 @@ class UserController(ControllerBase):
         )
         user.set_password(payload.password)
         await sync_to_async(user.save)()
+
+        # Add user to corresponding group based on role
+        group, _ = await sync_to_async(Group.objects.get_or_create)(name=payload.role)
+        await sync_to_async(user.groups.add)(group)
+
         return self.create_response(build_user_out(user), status_code=201)
 
     @http_post('/login/', response={200: UserOut, 400: ErrorResponse})

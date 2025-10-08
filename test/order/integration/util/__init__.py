@@ -1,7 +1,6 @@
 """Utility functions for order integration tests."""
 
 from test.order.integration.util.test_order_given_util import (
-    given_authenticated_as,
     given_buyer_exists,
     given_logged_in_as_buyer,
     given_logged_in_as_seller,
@@ -9,6 +8,7 @@ from test.order.integration.util.test_order_given_util import (
     given_products_exist,
     given_seller_with_product,
     given_users_exist,
+    login_as,
 )
 from test.order.integration.util.test_order_then_util import (
     then_error_message_contains,
@@ -23,7 +23,6 @@ from test.order.integration.util.test_order_when_util import when_create_order
 
 __all__ = [
     # Given helpers
-    'given_authenticated_as',
     'given_seller_with_product',
     'given_buyer_exists',
     'given_logged_in_as_buyer',
@@ -31,6 +30,7 @@ __all__ = [
     'given_users_exist',
     'given_products_exist',
     'given_orders_exist',
+    'login_as',
     # When helpers
     'when_create_order',
     # Then helpers

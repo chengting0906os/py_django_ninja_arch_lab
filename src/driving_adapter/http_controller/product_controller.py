@@ -2,7 +2,6 @@
 
 from typing import List
 
-from asgiref.sync import sync_to_async
 from django.http import HttpRequest
 from injector import inject
 from ninja_extra import (
@@ -19,7 +18,7 @@ from src.app.use_case.product.delete_product_use_case import DeleteProductUseCas
 from src.app.use_case.product.get_product_use_case import GetProductUseCase
 from src.app.use_case.product.list_product_use_case import ListProductUseCase
 from src.app.use_case.product.update_product_use_case import UpdateProductUseCase
-from src.domain.enum.user_role_enum import UserRole
+from src.driving_adapter.http_controller.dependency.permission import IsSeller
 from src.driving_adapter.http_controller.schema.product_schema import (
     ProductCreateRequest,
     ProductResponse,
@@ -58,23 +57,10 @@ class ProductController(ControllerBase):
         self.list_product_use_case = list_product_use_case
         self.update_product_use_case = update_product_use_case
 
-    async def _get_authenticated_user(self, request: HttpRequest):
-        user = await sync_to_async(lambda: request.user)()
-        if not user or not user.is_authenticated:
-            raise ForbiddenError('Authentication required')
-        return user
-
-    async def _ensure_seller(self, request: HttpRequest):
-        user = await self._get_authenticated_user(request)
-        role = getattr(user, 'role', UserRole.BUYER.value)
-        if role != UserRole.SELLER.value:
-            raise ForbiddenError('Only sellers can perform this action')
-        return user
-
-    @http_post('/', response={201: ProductResponse})
+    @http_post('/', response={201: ProductResponse}, permissions=[IsSeller])
     @Logger.io
     async def create_product(self, request: HttpRequest, payload: ProductCreateRequest):
-        seller = await self._ensure_seller(request)
+        seller = request.user
         if seller.id is None:
             raise DomainError('Authenticated user ID cannot be None')
 
@@ -91,7 +77,7 @@ class ProductController(ControllerBase):
 
         return self.create_response(_build_product_response(product), status_code=201)
 
-    @http_patch('/{product_id}', response=ProductResponse)
+    @http_patch('/{product_id}', response=ProductResponse, permissions=[IsSeller])
     @Logger.io
     async def update_product(
         self,
@@ -99,7 +85,7 @@ class ProductController(ControllerBase):
         product_id: int,
         payload: ProductUpdateRequest,
     ):
-        seller = await self._ensure_seller(request)
+        seller = request.user
         # Ensure ownership before performing update
         existing = await self.get_product_use_case.get_by_id(product_id)
         if not existing:
@@ -117,10 +103,10 @@ class ProductController(ControllerBase):
 
         return _build_product_response(product)
 
-    @http_delete('/{product_id}', response={204: None})
+    @http_delete('/{product_id}', response={204: None}, permissions=[IsSeller])
     @Logger.io
     async def delete_product(self, request: HttpRequest, product_id: int):
-        seller = await self._ensure_seller(request)
+        seller = request.user
         product = await self.get_product_use_case.get_by_id(product_id)
         if not product:
             raise NotFoundError(f'Product with id {product_id} not found')

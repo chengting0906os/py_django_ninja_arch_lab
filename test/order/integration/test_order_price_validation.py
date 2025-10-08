@@ -6,7 +6,6 @@ import pytest
 
 from src.driven_adapter.model.product_model import ProductModel
 from test.order.integration.util import (
-    given_authenticated_as,
     given_logged_in_as_buyer,
     given_seller_with_product,
     given_users_exist,
@@ -132,8 +131,8 @@ class TestOrderPriceValidation:
                 }
             ],
         )
-        buyer2_id = users['buyer2@test.com']
-        given_authenticated_as(client, buyer2_id)
+        _ = users['buyer2@test.com']
+        await given_logged_in_as_buyer(client, 'buyer2@test.com', 'P@ssw0rd')
         response = await when_create_order(client, product_id)
 
         # Then new order should have price 2000

@@ -4,7 +4,7 @@ from ninja_extra.testing import TestAsyncClient
 import pytest
 
 from test.order.integration.util import (
-    given_authenticated_as,
+    given_logged_in_as_buyer,
     given_orders_exist,
     given_products_exist,
     given_users_exist,
@@ -52,7 +52,7 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When buyer pays for the order
-        given_authenticated_as(client, buyer_id)
+        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',
@@ -117,7 +117,7 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When buyer tries to pay again
-        given_authenticated_as(client, buyer_id)
+        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',
@@ -165,7 +165,7 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When buyer tries to pay
-        given_authenticated_as(client, buyer_id)
+        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',
@@ -192,7 +192,7 @@ class TestOrderPayment:
         )
         seller_id = users['seller@test.com']
         buyer_id = users['buyer@test.com']
-        other_id = users['other@test.com']
+        _ = users['other@test.com']
 
         products = await given_products_exist(
             client, seller_id, [{'name': 'Product A', 'price': 1000, 'status': 'reserved'}]
@@ -215,7 +215,7 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When another user tries to pay
-        given_authenticated_as(client, other_id)
+        await given_logged_in_as_buyer(client, 'other@test.com', 'P@ssw0rd')
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',

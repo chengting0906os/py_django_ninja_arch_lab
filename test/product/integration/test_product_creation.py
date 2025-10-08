@@ -8,6 +8,8 @@ from test.product.integration.util import (
     given_logged_in_buyer,
     given_logged_in_seller,
     given_product_payload,
+    given_seller_user_exists,
+    login_as,
     then_error_message_contains,
 )
 
@@ -18,10 +20,11 @@ class TestProductCreation:
     async def test_create_product_successfully(self, client: TestAsyncClient):
         """Test creating a new product successfully."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_seller_user_exists(client, 'seller@test.com', 'P@ssw0rd')
         product_data = given_product_payload('iPhone 18', 'Latest Apple smartphone', 1500)
 
-        # When
+        # When - login before creating product
+        await login_as(client, 'seller@test.com', 'P@ssw0rd')
         response = await self._when_create_product(client, product_data)
 
         # Then

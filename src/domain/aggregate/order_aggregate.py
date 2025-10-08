@@ -1,9 +1,9 @@
 """Order Aggregate Root implementation."""
 
-from datetime import datetime
 from typing import List, Optional
 
 import attrs
+from django.utils import timezone
 
 from src.domain.domain_event.order_domain_event import (
     DomainEventProtocol,
@@ -133,7 +133,7 @@ class OrderAggregate:
                 aggregate_id=self.order.id or 0,
                 buyer_id=self.order.buyer_id,
                 product_id=self.order.product_id,
-                paid_at=self.order.paid_at or datetime.now(),
+                paid_at=self.order.paid_at or timezone.now(),
                 buyer_email=self.buyer_info.email,
                 product_name=self.product_snapshot.name,
                 paid_amount=self.order.price,

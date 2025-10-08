@@ -22,21 +22,24 @@ async def given_buyer_user_exists(client: TestAsyncClient, email: str, password:
     return response.json()['id']
 
 
-async def given_logged_in_seller(client: TestAsyncClient, email: str, password: str) -> int:
-    """Create and login a seller user via Django session, return user id."""
-    user_id = await given_seller_user_exists(client, email, password)
+async def login_as(client: TestAsyncClient, email: str, password: str):
+    """Login as user. Call this before each authenticated request."""
     login_data = {'email': email, 'password': password}
     response = await client.post(AUTH_LOGIN, json=login_data)  # pyrefly: ignore[async-error]
     assert response.status_code == 200, f'Failed to login: {response.json()}'
+
+
+async def given_logged_in_seller(client: TestAsyncClient, email: str, password: str) -> int:
+    """Create seller and login. Returns user_id."""
+    user_id = await given_seller_user_exists(client, email, password)
+    await login_as(client, email, password)
     return user_id
 
 
 async def given_logged_in_buyer(client: TestAsyncClient, email: str, password: str) -> int:
-    """Create and login a buyer user via Django session, return user id."""
+    """Create buyer and login. Returns user_id."""
     user_id = await given_buyer_user_exists(client, email, password)
-    login_data = {'email': email, 'password': password}
-    response = await client.post(AUTH_LOGIN, json=login_data)  # pyrefly: ignore[async-error]
-    assert response.status_code == 200, f'Failed to login: {response.json()}'
+    await login_as(client, email, password)
     return user_id
 
 

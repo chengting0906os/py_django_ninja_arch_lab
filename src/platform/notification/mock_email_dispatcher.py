@@ -1,8 +1,9 @@
-from datetime import datetime
 from typing import List, Optional
 
-from src.platform.logging.loguru_io import Logger
+from django.utils import timezone
+
 from src.app.interface.i_email_dispatcher import IEmailDispatcher
+from src.platform.logging.loguru_io import Logger
 
 
 class MockEmailDispatcher(IEmailDispatcher):
@@ -18,7 +19,7 @@ class MockEmailDispatcher(IEmailDispatcher):
             'subject': subject,
             'body': body,
             'cc': cc or [],
-            'sent_at': datetime.now(),
+            'sent_at': timezone.now(),
         }
 
         self.sent_emails.append(email_data)

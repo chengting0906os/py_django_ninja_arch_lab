@@ -3,7 +3,8 @@
 import pytest
 
 from test.order.integration.util import (
-    given_authenticated_as,
+    given_logged_in_as_buyer,
+    given_logged_in_as_seller,
     given_orders_exist,
     given_products_exist,
     given_users_exist,
@@ -132,7 +133,7 @@ class TestOrderList:
         )
 
         # When buyer requests their orders
-        given_authenticated_as(client, buyer1_id)
+        await given_logged_in_as_buyer(client, 'buyer1@test.com', 'P@ssw0rd')
         response = await client.get('/order/my-orders')
 
         # Then
@@ -245,7 +246,7 @@ class TestOrderList:
         )
 
         # When seller requests their orders
-        given_authenticated_as(client, seller1_id)
+        await given_logged_in_as_seller(client, 'seller1@test.com', 'P@ssw0rd')
         response = await client.get(f'/order/seller/{seller1_id}')
 
         # Then
@@ -295,10 +296,10 @@ class TestOrderList:
             ],
         )
 
-        buyer3_id = users['buyer3@test.com']
+        _ = users['buyer3@test.com']
 
         # When buyer requests their orders
-        given_authenticated_as(client, buyer3_id)
+        await given_logged_in_as_buyer(client, 'buyer3@test.com', 'P@ssw0rd')
         response = await client.get('/order/my-orders')
 
         # Then
@@ -372,7 +373,7 @@ class TestOrderList:
         )
 
         # When buyer requests orders filtered by 'paid' status
-        given_authenticated_as(client, buyer1_id)
+        await given_logged_in_as_buyer(client, 'buyer1@test.com', 'P@ssw0rd')
         response = await client.get('/order/my-orders?order_status=paid')
 
         # Then
@@ -451,7 +452,7 @@ class TestOrderList:
         )
 
         # When buyer requests orders filtered by 'pending_payment' status
-        given_authenticated_as(client, buyer1_id)
+        await given_logged_in_as_buyer(client, 'buyer1@test.com', 'P@ssw0rd')
         response = await client.get('/order/my-orders?order_status=pending_payment')
 
         # Then
