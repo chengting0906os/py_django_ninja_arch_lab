@@ -14,9 +14,9 @@
 Our services follow a hexagonal architecture:
 
 - **Domain** holds entities, value objects, and domain events (pure `attrs`-powered logic).
-- **Application** orchestrates use cases via the Unit of Work interfaces.
-- **Driven adapters** integrate with outbound systems (database/auth) using SQLAlchemy repos.
-- **Driving adapters** expose inbound ports (FastAPI controllers, Pydantic schemas).
+- **Application** orchestrates use cases and coordinates repositories; transactions are managed by use cases or repository implementations (there is no mandatory global Unit of Work abstraction in this codebase).
+- **Driven adapters** integrate with outbound systems (database/auth) using repository implementations (often SQLAlchemy-based).
+- **Driving adapters** expose inbound ports (Django views/controllers and django-ninja endpoints where applicable); request/response schemas (Pydantic) are used in API layers when helpful.
 - **Platform** centralizes cross-cutting concerns such as configuration, migrations, logging, and notification stubs.
 
 Refer to [TECH_STACK.md](TECH_STACK.md#hexagonal-architecture--layer-responsibilities) for a deeper breakdown.
@@ -24,11 +24,9 @@ Refer to [TECH_STACK.md](TECH_STACK.md#hexagonal-architecture--layer-responsibil
 # Must-Do Rules
 
 - **Imports**: Always at top of file, never inside functions.
-- **Async**: Prefer `async` over sync.
+- **Async**: Prefer `async` for I/O-bound work (network, external services).
 - **Function Parameters**: Use keyword-first style for clarity (`def action(*, order_id: int)`).
 - **Dependency Inversion**: High-level modules depend on abstractions, not low-level implementations.
-- **Transaction Management**: Use cases commit; repositories only perform CRUD.
-- **Unit of Work Pattern**: Centralize session and repository management; define transaction boundaries.
 - **Fail Fast**: Validate inputs and state early; raise domain exceptions immediately.
 - **Open/Closed**: Open for extension, closed for modification.
 - **Single Responsibility**: Each function, class, and module has one well-defined responsibility.
@@ -38,10 +36,14 @@ Refer to [TECH_STACK.md](TECH_STACK.md#hexagonal-architecture--layer-responsibil
 
 ## BDD (Behavior-Driven Development)
 
-**Before writing tests**: read [test/conftest.py](../test/conftest.py) for async fixtures, database bootstrap, and shared fakes.
+**Before writing tests**: read [test/conftest.py](../test/conftest.py) for fixtures, database bootstrap, and shared fakes. The test suite uses pytest with async helpers and a custom `SessionTestAsyncClient` to support Django session-based auth.
 
-- **Integration tests**: capture behavior in `.feature` files under `test/features/` using Given/When/Then.
+- **Integration tests**: tests follow a BDD-style structure (Given/When/Then) by convention, but the project does not rely on an external BDD framework or `.feature` files. Look for helper modules under `test/*/integration/util/` (for example `test_product_given_util.py`, `test_product_when_util.py`, `test_product_then_util.py`).
 - **Unit tests**: place fast, isolated tests in `test/<bounded_context>/unit/`, reuse doubles from `test/shared/fakes.py`.
+
+Notes:
+
+- The BDD flavor is achieved through helper functions and consistent naming; prefer using the existing Given/When/Then helpers when adding integration tests.
 
 ## TDD (Test-Driven Development)
 
