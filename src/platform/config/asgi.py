@@ -1,7 +1,5 @@
 """ASGI entrypoint with lifecycle hooks for the Django + Ninja Extra stack."""
 
-from __future__ import annotations
-
 import asyncio
 from contextlib import asynccontextmanager
 import os
@@ -21,20 +19,19 @@ django.setup()
 
 django_asgi_app = get_asgi_application()
 shutdown_event = asyncio.Event()
-logger = Logger.base
 
 
 @asynccontextmanager
 async def app_lifespan() -> AsyncGenerator[None, None]:
     """Manage startup and shutdown routines for the application lifecycle."""
     try:
-        logger.info('Application starting up...')
+        Logger.base.info('Application starting up...')
         yield
     except asyncio.CancelledError:
-        logger.info('Application startup cancelled')
+        Logger.base.info('Application startup cancelled')
         raise
     finally:
-        logger.info('Application shutting down...')
+        Logger.base.info('Application shutting down...')
         shutdown_event.set()
 
 
@@ -58,7 +55,7 @@ async def lifespan(
                 await send({'type': 'lifespan.shutdown.complete'})
                 break
             else:
-                logger.warning(f'Unexpected lifespan message type: {message_type}')
+                Logger.base.warning(f'Unexpected lifespan message type: {message_type}')
 
 
 async def application(
@@ -79,7 +76,7 @@ def main() -> None:
         'src.platform.config.asgi:application',
         host='0.0.0.0',
         port=8000,
-        reload=True,
+        reload=False,
         lifespan='on',
         loop='uvloop',
     )
