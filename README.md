@@ -66,6 +66,39 @@ Features are intentionally lightweight; focus on the architecture patterns.
 
 ---
 
+## Quick Start
+
+1. **Install dependencies**
+
+   ```bash
+   uv sync
+   ```
+
+2. **Start database**
+
+   ```bash
+   docker compose up -d
+   ```
+
+3. **Apply database migrations**
+
+   ```bash
+   make m
+   ```
+   > Migration files are already included in the repository
+
+4. **Start development server**
+
+   ```bash
+   make run
+   ```
+
+5. **View API documentation**
+
+   Open [http://0.0.0.0:8000/api/docs#](http://0.0.0.0:8000/api/docs#) to see Swagger UI
+
+---
+
 ## Further Reading
 
 - Clean Architecture & DDD overview: [spec/TECH_STACK.md](spec/TECH_STACK.md)
