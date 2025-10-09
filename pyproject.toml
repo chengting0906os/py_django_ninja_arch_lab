@@ -104,7 +104,7 @@ filterwarnings = [
 testpaths = ["test"]
 # pytest-bdd configuration
 bdd_features_base_dir = "test/features/"
-addopts = "-v --tb=short --strict-markers"
+addopts = "-v --tb=short --strict-markers --reuse-db --create-db"
 
 [tool.pyright]
 

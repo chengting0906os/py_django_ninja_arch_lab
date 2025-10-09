@@ -50,7 +50,7 @@ class SessionTestAsyncClient(TestAsyncClient):
 
     def _build_request(self, *args, **kwargs):
         """Add shared session and user to the mock request."""
-        import os
+        from concurrent.futures import ThreadPoolExecutor
 
         from django.contrib.auth.models import AnonymousUser
 
@@ -58,21 +58,37 @@ class SessionTestAsyncClient(TestAsyncClient):
         # Use the same session instance for all requests
         mock.session = self.session
 
-        # Load user from session (allow sync DB access in test)
+        # Load user from session using thread pool to avoid async context issues
         user_id = self.session.get('_auth_user_id')
         if user_id:
-            # Temporarily allow async-unsafe operations for loading user
-            os.environ['DJANGO_ALLOW_ASYNC_UNSAFE'] = 'true'
-            try:
-                mock.user = User.objects.get(pk=user_id)
-            except User.DoesNotExist:
-                mock.user = AnonymousUser()
-            finally:
-                del os.environ['DJANGO_ALLOW_ASYNC_UNSAFE']
+
+            def get_user_sync(pk):
+                try:
+                    return User.objects.get(pk=pk)
+                except User.DoesNotExist:
+                    return None
+
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(get_user_sync, user_id)
+                user = future.result()
+
+            mock.user = user if user else AnonymousUser()
         else:
             mock.user = AnonymousUser()
 
         return mock
+
+
+def pytest_configure(config):
+    """Run migrations before tests when using --reuse-db."""
+    from django.core.management import call_command
+
+    # Only run if using reuse-db
+    if config.getoption('--reuse-db', default=False):
+        try:
+            call_command('migrate', '--run-syncdb', verbosity=0)
+        except Exception:
+            pass  # First run might not have DB yet
 
 
 @pytest.fixture(scope='session')
