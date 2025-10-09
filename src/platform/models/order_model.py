@@ -18,7 +18,7 @@ class OrderModel(models.Model):
         related_name='seller_orders',
     )
     product = models.ForeignKey(
-        'models.ProductModel',
+        'platform.ProductModel',
         on_delete=models.CASCADE,
         related_name='orders',
     )
@@ -34,6 +34,6 @@ class OrderModel(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        app_label = 'models'
+        app_label = 'platform'
         db_table = 'order'
         ordering = ['id']

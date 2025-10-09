@@ -26,6 +26,6 @@ class ProductModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        app_label = 'models'
+        app_label = 'platform'
         db_table = 'product'
         ordering = ['id']

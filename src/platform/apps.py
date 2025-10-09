@@ -10,3 +10,7 @@ class PlatformConfig(AppConfig):
 
     name = 'src.platform'
     label = 'platform'
+
+    def ready(self):
+        """Import models when app is ready."""
+        pass

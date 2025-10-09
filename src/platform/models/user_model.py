@@ -20,8 +20,8 @@ class User(AbstractUser):
     REQUIRED_FIELDS: list[str] = []
 
     class Meta:  # type: ignore[override]
-        app_label = 'models'
-        db_table = 'user_auth'
+        app_label = 'platform'
+        db_table = 'auth_user'
 
     def __str__(self):
         return self.email
