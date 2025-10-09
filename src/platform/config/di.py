@@ -1,7 +1,5 @@
 """Dependency injection configuration for application use cases."""
 
-from __future__ import annotations
-
 from injector import Binder, Module, provider, singleton
 
 from src.app.interface.i_email_dispatcher import IEmailDispatcher

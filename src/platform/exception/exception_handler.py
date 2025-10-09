@@ -1,7 +1,5 @@
 """Centralized exception handlers for Django Ninja Extra."""
 
-from __future__ import annotations
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse

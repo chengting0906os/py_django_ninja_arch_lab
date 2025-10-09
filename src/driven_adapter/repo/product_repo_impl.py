@@ -1,7 +1,5 @@
 """Product repository implementation backed by Django ORM."""
 
-from __future__ import annotations
-
 from typing import List, Optional, Tuple
 
 from asgiref.sync import sync_to_async

@@ -1,7 +1,5 @@
 """Order repository implementation backed by Django ORM."""
 
-from __future__ import annotations
-
 from typing import List, Optional
 
 from asgiref.sync import sync_to_async

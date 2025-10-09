@@ -1,7 +1,5 @@
 """Domain entity definitions for user aggregate."""
 
-from __future__ import annotations
-
 import attrs
 
 from src.domain.enum.user_role_enum import UserRole
