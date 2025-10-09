@@ -8,7 +8,7 @@ import os
 from typing import Any, AsyncGenerator, Awaitable, Callable, Dict
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.platform.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'src.platform.config.settings')
 
 import django  # noqa: E402
 from django.core.asgi import get_asgi_application  # noqa: E402
