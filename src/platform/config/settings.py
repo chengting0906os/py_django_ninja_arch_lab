@@ -1,4 +1,12 @@
-"""Django settings for the shopping system project."""
+"""Django settings for the shopping system project.
+
+SECURITY NOTES FOR PRODUCTION:
+- SECRET_KEY: MUST be strong random value (use secrets.token_urlsafe(50))
+- DEBUG: MUST be False in production
+- ALLOWED_HOSTS: MUST specify exact domains, never use ['*']
+- Database credentials: Store in environment variables or secrets manager
+- CORS_ALLOWED_ORIGINS: Restrict to known frontend domains only
+"""
 
 from pathlib import Path
 
@@ -7,8 +15,17 @@ from src.platform.config.env_config import env_config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SECURITY WARNING: Keep SECRET_KEY secret! Use environment variable in production.
+# Generate new key: python -c "import secrets; print(secrets.token_urlsafe(50))"
 SECRET_KEY = env_config.SECRET_KEY.get_secret_value()
+
+# SECURITY WARNING: Don't run with DEBUG=True in production!
+# Set DEBUG=False in production to prevent information disclosure.
 DEBUG = env_config.DEBUG
+
+# SECURITY WARNING: Update ALLOWED_HOSTS for production!
+# Example: ALLOWED_HOSTS = ['api.yourdomain.com', 'www.yourdomain.com']
+# Never use ['*'] in production - it allows Host header attacks.
 ALLOWED_HOSTS: list[str] = ['*']
 
 INSTALLED_APPS = [
@@ -61,6 +78,8 @@ DATABASES = {
         'PASSWORD': env_config.POSTGRES_PASSWORD.get_secret_value(),
         'HOST': env_config.POSTGRES_SERVER,
         'PORT': env_config.POSTGRES_PORT,
+        # TODO: Enable SSL in production
+        # 'OPTIONS': {'sslmode': 'require'},
     }
 }
 
@@ -97,6 +116,9 @@ NINJA_EXTRA = {
     'INJECTOR_MODULES': ['src.platform.config.di.ApplicationModule'],
 }
 
+# SECURITY WARNING: CORS configuration for production
+# CORS_ALLOW_CREDENTIALS=True requires specific origins, not wildcard
+# Only allow trusted frontend domains in CORS_ALLOWED_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = env_config.BACKEND_CORS_ORIGINS
 CORS_ALLOW_HEADERS = [
@@ -112,10 +134,22 @@ CORS_ALLOW_HEADERS = [
 ]
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 
+# SECURITY: Cookie settings for CSRF and session protection
+# SECURE=True requires HTTPS (enforced in production when DEBUG=False)
+# SameSite='None' for cross-origin requests (requires Secure=True)
+# Consider SameSite='Strict' or 'Lax' if same-origin only
 SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
-SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG  # Requires HTTPS in production
 CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
-CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG  # Requires HTTPS in production
+
+# TODO: Additional production security settings to consider:
+# SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
+# SECURE_HSTS_SECONDS = 31536000  # HTTP Strict Transport Security
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+# SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+# CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF token
 
 LOGGING = {
     'version': 1,
