@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'ninja_extra',
-    'src.driving_adapter.http_controller',
     'src.driven_adapter',
 ]
 
