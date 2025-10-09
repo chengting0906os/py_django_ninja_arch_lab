@@ -31,6 +31,7 @@ Refer to [TECH_STACK.md](TECH_STACK.md#hexagonal-architecture--layer-responsibil
 - **Open/Closed**: Open for extension, closed for modification.
 - **Single Responsibility**: Each function, class, and module has one well-defined responsibility.
 - **Logging**: Apply `Logger.io` decorators thoughtfully across layers to trace ingress/egress or critical operations.
+- **Pydantic Schemas**: All `BaseModel` schemas MUST include a `Config` class with `from_attributes = True` and `json_schema_extra` containing example data for API documentation (OpenAPI/Swagger).
 
 # Core Development Philosophy
 
