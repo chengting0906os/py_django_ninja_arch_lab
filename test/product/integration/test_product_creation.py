@@ -12,6 +12,7 @@ from test.product.integration.util import (
     login_as,
     then_error_message_contains,
 )
+from test.util_constant import DEFAULT_PASSWORD, TEST_BUYER_EMAIL, TEST_SELLER_EMAIL
 
 
 @pytest.mark.django_db(transaction=True)
@@ -20,11 +21,11 @@ class TestProductCreation:
     async def test_create_product_successfully(self, client: TestAsyncClient):
         """Test creating a new product successfully."""
         # Given
-        await given_seller_user_exists(client, 'seller@test.com', 'P@ssw0rd')
+        await given_seller_user_exists(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_data = given_product_payload('iPhone 18', 'Latest Apple smartphone', 1500)
 
         # When - login before creating product
-        await login_as(client, 'seller@test.com', 'P@ssw0rd')
+        await login_as(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         response = await self._when_create_product(client, product_data)
 
         # Then
@@ -34,7 +35,7 @@ class TestProductCreation:
     async def test_create_product_with_negative_price(self, client: TestAsyncClient):
         """Test creating a product with negative price should fail."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_data = given_product_payload('iPhone 25', 'Apple phone', -500)
 
         # When
@@ -48,7 +49,7 @@ class TestProductCreation:
     async def test_create_inactive_product(self, client: TestAsyncClient):
         """Test creating an inactive product."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_data = given_product_payload(
             'iPad Pro', 'Professional tablet', 2000, is_active=False
         )
@@ -65,7 +66,7 @@ class TestProductCreation:
     async def test_buyer_cannot_create_product(self, client: TestAsyncClient):
         """Test that buyer users cannot create products."""
         # Given
-        await given_logged_in_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         product_data = given_product_payload('MacBook', 'Apple laptop', 3000)
 
         # When

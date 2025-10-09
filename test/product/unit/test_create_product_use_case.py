@@ -7,6 +7,7 @@ import pytest
 from src.app.use_case.product.create_product_use_case import CreateProductUseCase
 from src.domain.entity.product_entity import Product
 from src.domain.enum.product_status import ProductStatus
+from test.util_constant import TEST_PRODUCT_NAME
 
 
 @pytest.mark.asyncio
@@ -16,7 +17,7 @@ async def test_create_product_returns_created_product():
     mock_repo = Mock()
     created_product = Product(
         id=99,
-        name='Test Product',
+        name=TEST_PRODUCT_NAME,
         description='A product for testing',
         price=150,
         seller_id=7,
@@ -30,7 +31,7 @@ async def test_create_product_returns_created_product():
 
     # When
     result = await use_case.create(
-        name='Test Product',
+        name=TEST_PRODUCT_NAME,
         description='A product for testing',
         price=150,
         seller_id=7,

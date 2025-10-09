@@ -9,6 +9,7 @@ from ninja_extra.testing import TestAsyncClient
 from src.driven_adapter.model.order_model import OrderModel
 from src.driven_adapter.model.product_model import ProductModel
 from src.platform.constant.route_constant import AUTH_LOGIN, PRODUCT_CREATE, USER_CREATE
+from test.util_constant import DEFAULT_PASSWORD
 
 
 async def given_seller_with_product(
@@ -27,7 +28,7 @@ async def given_seller_with_product(
 
     seller_data = {
         'email': seller_email,
-        'password': 'P@ssw0rd',
+        'password': DEFAULT_PASSWORD,
         'role': 'seller',
     }
     response = await client.post(USER_CREATE, json=seller_data)  # pyrefly: ignore[async-error]
@@ -35,7 +36,7 @@ async def given_seller_with_product(
     seller_id = response.json()['id']
 
     # Login as seller
-    login_data = {'email': seller_email, 'password': 'P@ssw0rd'}
+    login_data = {'email': seller_email, 'password': DEFAULT_PASSWORD}
     response = await client.post(AUTH_LOGIN, json=login_data)  # pyrefly: ignore[async-error]
     assert response.status_code == 200, f'Failed to login seller: {response.json()}'
 

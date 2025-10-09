@@ -9,6 +9,7 @@ from test.user.integration.util import (
     then_user_creation_failed,
     when_create_user,
 )
+from test.util_constant import DEFAULT_PASSWORD, TEST_EMAIL
 
 
 @pytest.mark.django_db(transaction=True)
@@ -17,7 +18,7 @@ class TestUserCreation:
     async def test_create_buyer_user(self, client: TestAsyncClient):
         """Test creating a new buyer user."""
         # Given
-        user_data = given_user_payload('test@example.com', 'P@ssw0rd', 'buyer')
+        user_data = given_user_payload(TEST_EMAIL, DEFAULT_PASSWORD, 'buyer')
 
         # When
         response = await when_create_user(client, user_data)
@@ -29,7 +30,7 @@ class TestUserCreation:
     async def test_create_seller_user(self, client: TestAsyncClient):
         """Test creating a new seller user."""
         # Given
-        user_data = given_user_payload('seller@example.com', 'P@ssw0rd', 'seller')
+        user_data = given_user_payload('seller@example.com', DEFAULT_PASSWORD, 'seller')
 
         # When
         response = await when_create_user(client, user_data)
@@ -41,7 +42,7 @@ class TestUserCreation:
     async def test_create_user_with_invalid_role(self, client: TestAsyncClient):
         """Test creating a user with invalid role."""
         # Given
-        user_data = given_user_payload('test@example.com', 'P@ssw0rd', 'wrong_user')
+        user_data = given_user_payload(TEST_EMAIL, DEFAULT_PASSWORD, 'wrong_user')
 
         # When
         response = await when_create_user(client, user_data)
@@ -53,7 +54,7 @@ class TestUserCreation:
     async def test_create_duplicate_user(self, client: TestAsyncClient):
         """Test creating a user with duplicate email."""
         # Given
-        user_data = given_user_payload('duplicate@example.com', 'P@ssw0rd', 'buyer')
+        user_data = given_user_payload('duplicate@example.com', DEFAULT_PASSWORD, 'buyer')
         await when_create_user(client, user_data)
 
         # When

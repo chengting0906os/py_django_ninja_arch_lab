@@ -5,6 +5,7 @@ import pytest
 
 from src.platform.constant.route_constant import PRODUCT_CREATE, PRODUCT_LIST
 from test.product.integration.util import given_logged_in_seller
+from test.util_constant import DEFAULT_PASSWORD, TEST_SELLER_EMAIL
 
 
 @pytest.mark.django_db(transaction=True)
@@ -13,7 +14,7 @@ class TestProductList:
     async def test_seller_sees_all_their_products(self, client: TestAsyncClient):
         """Test that sellers can see all their products regardless of status."""
         # Given
-        seller_id = await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        seller_id = await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         await self._given_seller_has_products(
             client,
             [
@@ -42,7 +43,7 @@ class TestProductList:
     async def test_buyer_sees_only_active_and_available_products(self, client: TestAsyncClient):
         """Test that buyers only see active and available products."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         await self._given_seller_has_products(
             client,
             [
@@ -73,7 +74,7 @@ class TestProductList:
     async def test_empty_product_list_for_buyer(self, client: TestAsyncClient):
         """Test that buyer sees empty list when no available products exist."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         await self._given_seller_has_products(
             client,
             [

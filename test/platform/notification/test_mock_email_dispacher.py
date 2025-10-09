@@ -5,6 +5,7 @@ from datetime import datetime
 import pytest
 
 from src.platform.notification.mock_email_dispatcher import MockEmailDispatcher
+from test.util_constant import TEST_BUYER_NAME, TEST_EMAIL, TEST_PRODUCT_NAME
 
 
 class TestMockEmailDispatcher:
@@ -15,14 +16,14 @@ class TestMockEmailDispatcher:
     @pytest.mark.asyncio
     async def test_send_email(self, email_service):
         result = await email_service.send_email(
-            to='test@example.com', subject='Test Subject', body='Test Body'
+            to=TEST_EMAIL, subject='Test Subject', body='Test Body'
         )
 
         assert result is True
         assert len(email_service.sent_emails) == 1
 
         sent_email = email_service.sent_emails[0]
-        assert sent_email['to'] == 'test@example.com'
+        assert sent_email['to'] == TEST_EMAIL
         assert sent_email['subject'] == 'Test Subject'
         assert sent_email['body'] == 'Test Body'
         assert sent_email['cc'] == []
@@ -32,7 +33,7 @@ class TestMockEmailDispatcher:
     async def test_send_email_with_cc(self, email_service):
         cc_list = ['cc1@example.com', 'cc2@example.com']
         result = await email_service.send_email(
-            to='test@example.com', subject='Test Subject', body='Test Body', cc=cc_list
+            to=TEST_EMAIL, subject='Test Subject', body='Test Body', cc=cc_list
         )
 
         assert result is True
@@ -51,7 +52,7 @@ class TestMockEmailDispatcher:
         assert sent_email['to'] == 'buyer@example.com'
         assert 'Order Confirmation - Order #123' in sent_email['subject']
         assert 'Order ID: #123' in sent_email['body']
-        assert 'Test Product' in sent_email['body']
+        assert TEST_PRODUCT_NAME in sent_email['body']
         assert '$10,000' in sent_email['body']
         assert 'Pending Payment' in sent_email['body']
 
@@ -95,7 +96,7 @@ class TestMockEmailDispatcher:
             seller_email='seller@example.com',
             order_id=321,
             product_name='Hot Product',
-            buyer_name='John Doe',
+            buyer_name=TEST_BUYER_NAME,
             price=5099,
         )
 
@@ -106,7 +107,7 @@ class TestMockEmailDispatcher:
         assert 'New Order Received - Order #321' in sent_email['subject']
         assert 'Order ID: #321' in sent_email['body']
         assert 'Hot Product' in sent_email['body']
-        assert 'John Doe' in sent_email['body']
+        assert TEST_BUYER_NAME in sent_email['body']
         assert '$5,099' in sent_email['body']
 
     @pytest.mark.asyncio
@@ -116,7 +117,7 @@ class TestMockEmailDispatcher:
             await email_service.send_order_confirmation(
                 buyer_email='buyer@example.com',
                 order_id=order_id,
-                product_name='Test Product',
+                product_name=TEST_PRODUCT_NAME,
                 price=10000,
             )
         assert f'Invalid order_id: {order_id}' in str(exc_info.value)
@@ -135,7 +136,7 @@ class TestMockEmailDispatcher:
             await email_service.notify_seller_new_order(
                 seller_email='seller@example.com',
                 order_id=0,
-                product_name='Test Product',
+                product_name=TEST_PRODUCT_NAME,
                 buyer_name='Test Buyer',
                 price=10000,
             )

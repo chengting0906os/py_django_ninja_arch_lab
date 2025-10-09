@@ -8,6 +8,13 @@ from test.order.integration.util import (
     given_seller_with_product,
     when_create_order,
 )
+from test.util_constant import (
+    DEFAULT_PASSWORD,
+    TEST_BUYER_EMAIL,
+    TEST_CARD_NUMBER,
+    TEST_PRODUCT_DESCRIPTION,
+    TEST_PRODUCT_NAME,
+)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -18,10 +25,10 @@ class TestOrderStateTransition:
         """Test that paid orders cannot be cancelled."""
         # Given a product and buyer are logged in
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # And buyer creates an order
         response = await when_create_order(client, product_id)
@@ -31,7 +38,7 @@ class TestOrderStateTransition:
         # And buyer pays for the order
         # pyrefly: ignore  # async-error
         response = await client.post(
-            f'/order/{order_id}/pay', json={'card_number': '4242424242424242'}
+            f'/order/{order_id}/pay', json={'card_number': TEST_CARD_NUMBER}
         )
         assert response.status_code == 200
 
@@ -50,10 +57,10 @@ class TestOrderStateTransition:
         """Test that cancelled orders cannot be paid."""
         # Given a product and buyer are logged in
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # And buyer creates an order
         response = await when_create_order(client, product_id)
@@ -68,7 +75,7 @@ class TestOrderStateTransition:
         # When buyer tries to pay
         # pyrefly: ignore  # async-error
         response = await client.post(
-            f'/order/{order_id}/pay', json={'card_number': '4242424242424242'}
+            f'/order/{order_id}/pay', json={'card_number': TEST_CARD_NUMBER}
         )
 
         # Then
@@ -82,10 +89,10 @@ class TestOrderStateTransition:
         """Test that already cancelled orders cannot be cancelled again."""
         # Given a product and buyer are logged in
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # And buyer creates an order
         response = await when_create_order(client, product_id)
@@ -112,10 +119,10 @@ class TestOrderStateTransition:
         """Test valid state transition from PENDING_PAYMENT to PAID."""
         # Given a product and buyer are logged in
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # And buyer creates an order
         response = await when_create_order(client, product_id)
@@ -125,7 +132,7 @@ class TestOrderStateTransition:
         # When buyer pays for the order
         # pyrefly: ignore  # async-error
         response = await client.post(
-            f'/order/{order_id}/pay', json={'card_number': '4242424242424242'}
+            f'/order/{order_id}/pay', json={'card_number': TEST_CARD_NUMBER}
         )
 
         # Then
@@ -144,10 +151,10 @@ class TestOrderStateTransition:
         """Test valid state transition from PENDING_PAYMENT to CANCELLED."""
         # Given a product and buyer are logged in
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # And buyer creates an order
         response = await when_create_order(client, product_id)

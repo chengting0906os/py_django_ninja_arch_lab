@@ -9,6 +9,7 @@ from test.product.integration.util import (
     given_product_exists,
     then_error_message_contains,
 )
+from test.util_constant import DEFAULT_PASSWORD, SELLER1_EMAIL, SELLER2_EMAIL, TEST_SELLER_EMAIL
 
 
 @pytest.mark.django_db(transaction=True)
@@ -17,7 +18,7 @@ class TestProductDelete:
     async def test_delete_available_product(self, client: TestAsyncClient):
         """Test deleting an available product successfully."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_id = await given_product_exists(client, 'Test Item', 'Item to delete', 1000, True)
 
         # When
@@ -31,7 +32,7 @@ class TestProductDelete:
     async def test_cannot_delete_reserved_product(self, client: TestAsyncClient):
         """Test that reserved products cannot be deleted."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_id = await self._given_reserved_product_exists(
             client, 'Test Item', 'Reserved item', 1000
         )
@@ -47,7 +48,7 @@ class TestProductDelete:
     async def test_cannot_delete_sold_product(self, client: TestAsyncClient):
         """Test that sold products cannot be deleted."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_id = await self._given_sold_product_exists(client, 'Test Item', 'Sold item', 1000)
 
         # When
@@ -61,11 +62,11 @@ class TestProductDelete:
     async def test_cannot_delete_other_sellers_product(self, client: TestAsyncClient):
         """Test that sellers cannot delete other sellers' products."""
         # Given
-        await given_logged_in_seller(client, 'seller1@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, SELLER1_EMAIL, DEFAULT_PASSWORD)
         product_id = await given_product_exists(client, 'Test Item', 'Item to delete', 1000, True)
 
         # Login as different seller
-        await given_logged_in_seller(client, 'seller2@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, SELLER2_EMAIL, DEFAULT_PASSWORD)
 
         # When
         response = await self._when_delete_product(client, product_id)

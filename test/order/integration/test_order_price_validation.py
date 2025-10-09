@@ -12,6 +12,15 @@ from test.order.integration.util import (
     then_product_status_should_be,
     when_create_order,
 )
+from test.util_constant import (
+    DEFAULT_PASSWORD,
+    TEST_BUYER_EMAIL,
+    TEST_CARD_NUMBER,
+    TEST_PRODUCT_DESCRIPTION,
+    TEST_PRODUCT_NAME,
+    TEST_SELLER_EMAIL,
+    TEST_SELLER_NAME,
+)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -25,22 +34,22 @@ class TestOrderPriceValidation:
             client,
             [
                 {
-                    'email': 'seller@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Seller',
+                    'email': TEST_SELLER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_SELLER_NAME,
                     'role': 'seller',
                 },
             ],
         )
-        seller_id = users['seller@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
 
         # When trying to create product with negative price directly in DB
         # Then it should raise IntegrityError due to CHECK constraint
         from django.db.utils import IntegrityError
 
         product_model = ProductModel(
-            name='Test Product',
-            description='Test Description',
+            name=TEST_PRODUCT_NAME,
+            description=TEST_PRODUCT_DESCRIPTION,
             price=-100,
             seller_id=seller_id,
             is_active=True,
@@ -54,11 +63,11 @@ class TestOrderPriceValidation:
         """Test that order price matches product price at creation time."""
         # Given a product exists
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
         # When buyer creates order
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         response = await when_create_order(client, product_id)
 
         # Then
@@ -73,10 +82,10 @@ class TestOrderPriceValidation:
         """Test that product price changes don't affect existing orders."""
         # Given a product exists and buyer creates order
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         response = await when_create_order(client, product_id)
         assert response.status_code == 201
         order = response.json()
@@ -101,10 +110,10 @@ class TestOrderPriceValidation:
         """Test that new orders use updated product price."""
         # Given a product exists and first buyer creates order
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1000, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         response = await when_create_order(client, product_id)
         assert response.status_code == 201
         order1_id = response.json()['id']
@@ -125,14 +134,14 @@ class TestOrderPriceValidation:
             [
                 {
                     'email': 'buyer2@test.com',
-                    'password': 'P@ssw0rd',
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Buyer 2',
                     'role': 'buyer',
                 }
             ],
         )
         _ = users['buyer2@test.com']
-        await given_logged_in_as_buyer(client, 'buyer2@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, 'buyer2@test.com', DEFAULT_PASSWORD)
         response = await when_create_order(client, product_id)
 
         # Then new order should have price 2000
@@ -146,10 +155,10 @@ class TestOrderPriceValidation:
         """Test that paid order price remains unchanged after product price update."""
         # Given a product exists and buyer creates and pays for order
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Test Description', 1500, True, 'available'
+            client, TEST_PRODUCT_NAME, TEST_PRODUCT_DESCRIPTION, 1500, True, 'available'
         )
 
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         response = await when_create_order(client, product_id)
         assert response.status_code == 201
         order = response.json()
@@ -158,7 +167,7 @@ class TestOrderPriceValidation:
         # And buyer pays for order
         # pyrefly: ignore  # async-error
         response = await client.post(
-            f'/order/{order_id}/pay', json={'card_number': '4242424242424242'}
+            f'/order/{order_id}/pay', json={'card_number': TEST_CARD_NUMBER}
         )
         assert response.status_code == 200
 

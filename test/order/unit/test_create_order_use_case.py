@@ -12,6 +12,7 @@ from src.domain.enum.order_status import OrderStatus
 from src.domain.enum.product_status import ProductStatus
 from src.domain.enum.user_role_enum import UserRole
 from src.platform.exception.exceptions import DomainError
+from test.util_constant import TEST_BUYER_EMAIL, TEST_PRODUCT_NAME, TEST_SELLER_EMAIL
 
 
 @pytest.mark.asyncio
@@ -24,11 +25,11 @@ async def test_create_order_returns_created_order():
     mock_email_dispatcher = Mock()
 
     # Setup test data
-    buyer = User(id=1, email='buyer@test.com', name='Buyer', role=UserRole.BUYER)
-    seller = User(id=2, email='seller@test.com', name='Seller', role=UserRole.SELLER)
+    buyer = User(id=1, email=TEST_BUYER_EMAIL, name='Buyer', role=UserRole.BUYER)
+    seller = User(id=2, email=TEST_SELLER_EMAIL, name='Seller', role=UserRole.SELLER)
     product = Product(
         id=10,
-        name='Test Product',
+        name=TEST_PRODUCT_NAME,
         description='Test',
         price=1000,
         seller_id=seller.id,
@@ -152,11 +153,11 @@ async def test_create_order_reserves_product():
     mock_email_dispatcher = Mock()
 
     # Setup test data
-    buyer = User(id=1, email='buyer@test.com', name='Buyer', role=UserRole.BUYER)
-    seller = User(id=2, email='seller@test.com', name='Seller', role=UserRole.SELLER)
+    buyer = User(id=1, email=TEST_BUYER_EMAIL, name='Buyer', role=UserRole.BUYER)
+    seller = User(id=2, email=TEST_SELLER_EMAIL, name='Seller', role=UserRole.SELLER)
     product = Product(
         id=10,
-        name='Test Product',
+        name=TEST_PRODUCT_NAME,
         description='Test',
         price=1000,
         seller_id=seller.id,

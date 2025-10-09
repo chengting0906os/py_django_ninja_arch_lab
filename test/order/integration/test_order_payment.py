@@ -10,6 +10,12 @@ from test.order.integration.util import (
     given_users_exist,
     then_product_status_should_be,
 )
+from test.util_constant import (
+    DEFAULT_PASSWORD,
+    TEST_BUYER_EMAIL,
+    TEST_CARD_NUMBER,
+    TEST_SELLER_EMAIL,
+)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -22,12 +28,12 @@ class TestOrderPayment:
         users = await given_users_exist(
             client,
             [
-                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
-                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+                {'email': TEST_SELLER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'seller'},
+                {'email': TEST_BUYER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'buyer'},
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
 
         # And product exists
         products = await given_products_exist(
@@ -52,11 +58,11 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When buyer pays for the order
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',
-            json={'card_number': '4242424242424242'},
+            json={'card_number': TEST_CARD_NUMBER},
         )
 
         # Then
@@ -89,12 +95,12 @@ class TestOrderPayment:
         users = await given_users_exist(
             client,
             [
-                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
-                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+                {'email': TEST_SELLER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'seller'},
+                {'email': TEST_BUYER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'buyer'},
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
 
         products = await given_products_exist(
             client, seller_id, [{'name': 'Product A', 'price': 1000, 'status': 'sold'}]
@@ -117,11 +123,11 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When buyer tries to pay again
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',
-            json={'card_number': '4242424242424242'},
+            json={'card_number': TEST_CARD_NUMBER},
         )
 
         # Then
@@ -137,12 +143,12 @@ class TestOrderPayment:
         users = await given_users_exist(
             client,
             [
-                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
-                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+                {'email': TEST_SELLER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'seller'},
+                {'email': TEST_BUYER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'buyer'},
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
 
         products = await given_products_exist(
             client, seller_id, [{'name': 'Product A', 'price': 1000, 'status': 'available'}]
@@ -165,11 +171,11 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When buyer tries to pay
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',
-            json={'card_number': '4242424242424242'},
+            json={'card_number': TEST_CARD_NUMBER},
         )
 
         # Then
@@ -185,13 +191,13 @@ class TestOrderPayment:
         users = await given_users_exist(
             client,
             [
-                {'email': 'seller@test.com', 'password': 'P@ssw0rd', 'role': 'seller'},
-                {'email': 'buyer@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
-                {'email': 'other@test.com', 'password': 'P@ssw0rd', 'role': 'buyer'},
+                {'email': TEST_SELLER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'seller'},
+                {'email': TEST_BUYER_EMAIL, 'password': DEFAULT_PASSWORD, 'role': 'buyer'},
+                {'email': 'other@test.com', 'password': DEFAULT_PASSWORD, 'role': 'buyer'},
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
         _ = users['other@test.com']
 
         products = await given_products_exist(
@@ -215,11 +221,11 @@ class TestOrderPayment:
         order_id = orders[0]
 
         # When another user tries to pay
-        await given_logged_in_as_buyer(client, 'other@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, 'other@test.com', DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.post(
             f'/order/{order_id}/pay',
-            json={'card_number': '4242424242424242'},
+            json={'card_number': TEST_CARD_NUMBER},
         )
 
         # Then

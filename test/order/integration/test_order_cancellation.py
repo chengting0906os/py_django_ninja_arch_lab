@@ -11,6 +11,15 @@ from test.order.integration.util import (
     given_users_exist,
     then_product_status_should_be,
 )
+from test.util_constant import (
+    ANOTHER_BUYER_NAME,
+    DEFAULT_PASSWORD,
+    TEST_BUYER_EMAIL,
+    TEST_BUYER_NAME,
+    TEST_PRODUCT_NAME,
+    TEST_SELLER_EMAIL,
+    TEST_SELLER_NAME,
+)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -24,25 +33,25 @@ class TestOrderCancellation:
             client,
             [
                 {
-                    'email': 'seller@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Seller',
+                    'email': TEST_SELLER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_SELLER_NAME,
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Buyer',
+                    'email': TEST_BUYER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_BUYER_NAME,
                     'role': 'buyer',
                 },
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
 
         # And product exists
         products = await given_products_exist(
-            client, seller_id, [{'name': 'Test Product', 'price': 2000, 'status': 'reserved'}]
+            client, seller_id, [{'name': TEST_PRODUCT_NAME, 'price': 2000, 'status': 'reserved'}]
         )
         product_id = products[0]
 
@@ -63,7 +72,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When buyer cancels the order
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -88,24 +97,24 @@ class TestOrderCancellation:
             client,
             [
                 {
-                    'email': 'seller@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Seller',
+                    'email': TEST_SELLER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_SELLER_NAME,
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Buyer',
+                    'email': TEST_BUYER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_BUYER_NAME,
                     'role': 'buyer',
                 },
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
 
         products = await given_products_exist(
-            client, seller_id, [{'name': 'Test Product', 'price': 3000, 'status': 'sold'}]
+            client, seller_id, [{'name': TEST_PRODUCT_NAME, 'price': 3000, 'status': 'sold'}]
         )
         product_id = products[0]
 
@@ -125,7 +134,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When buyer tries to cancel
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -153,24 +162,24 @@ class TestOrderCancellation:
             client,
             [
                 {
-                    'email': 'seller@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Seller',
+                    'email': TEST_SELLER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_SELLER_NAME,
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Buyer',
+                    'email': TEST_BUYER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_BUYER_NAME,
                     'role': 'buyer',
                 },
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
 
         products = await given_products_exist(
-            client, seller_id, [{'name': 'Test Product', 'price': 1500, 'status': 'available'}]
+            client, seller_id, [{'name': TEST_PRODUCT_NAME, 'price': 1500, 'status': 'available'}]
         )
         product_id = products[0]
 
@@ -190,7 +199,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When buyer tries to cancel again
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -208,31 +217,31 @@ class TestOrderCancellation:
             client,
             [
                 {
-                    'email': 'seller@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Seller',
+                    'email': TEST_SELLER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_SELLER_NAME,
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Buyer',
+                    'email': TEST_BUYER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_BUYER_NAME,
                     'role': 'buyer',
                 },
                 {
                     'email': 'another@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Another Buyer',
+                    'password': DEFAULT_PASSWORD,
+                    'name': ANOTHER_BUYER_NAME,
                     'role': 'buyer',
                 },
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
         _ = users['another@test.com']
 
         products = await given_products_exist(
-            client, seller_id, [{'name': 'Test Product', 'price': 2500, 'status': 'reserved'}]
+            client, seller_id, [{'name': TEST_PRODUCT_NAME, 'price': 2500, 'status': 'reserved'}]
         )
         product_id = products[0]
 
@@ -252,7 +261,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When another user tries to cancel
-        await given_logged_in_as_buyer(client, 'another@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, 'another@test.com', DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -280,24 +289,24 @@ class TestOrderCancellation:
             client,
             [
                 {
-                    'email': 'seller@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Seller',
+                    'email': TEST_SELLER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_SELLER_NAME,
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Buyer',
+                    'email': TEST_BUYER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_BUYER_NAME,
                     'role': 'buyer',
                 },
             ],
         )
-        seller_id = users['seller@test.com']
-        buyer_id = users['buyer@test.com']
+        seller_id = users[TEST_SELLER_EMAIL]
+        buyer_id = users[TEST_BUYER_EMAIL]
 
         products = await given_products_exist(
-            client, seller_id, [{'name': 'Test Product', 'price': 4000, 'status': 'reserved'}]
+            client, seller_id, [{'name': TEST_PRODUCT_NAME, 'price': 4000, 'status': 'reserved'}]
         )
         product_id = products[0]
 
@@ -317,7 +326,7 @@ class TestOrderCancellation:
         order_id = orders[0]
 
         # When seller tries to cancel
-        await given_logged_in_as_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_as_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.delete(f'/order/{order_id}')
 
@@ -348,15 +357,15 @@ class TestOrderCancellation:
             client,
             [
                 {
-                    'email': 'seller@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Seller',
+                    'email': TEST_SELLER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_SELLER_NAME,
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer@test.com',
-                    'password': 'P@ssw0rd',
-                    'name': 'Test Buyer',
+                    'email': TEST_BUYER_EMAIL,
+                    'password': DEFAULT_PASSWORD,
+                    'name': TEST_BUYER_NAME,
                     'role': 'buyer',
                 },
             ],
@@ -366,12 +375,12 @@ class TestOrderCancellation:
 
         # And product exists
         products = await given_products_exist(
-            client, seller_id, [{'name': 'Test Product', 'price': 1800, 'status': 'available'}]
+            client, seller_id, [{'name': TEST_PRODUCT_NAME, 'price': 1800, 'status': 'available'}]
         )
         product_id = products[0]
 
         # When buyer tries to cancel non-existent order
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
         # pyrefly: ignore  # async-error
         response = await client.delete('/order/99999')
 

@@ -12,6 +12,14 @@ from test.order.integration.util import (
     then_response_should_contain_orders,
     then_response_status_code_should_be,
 )
+from test.util_constant import (
+    BUYER1_EMAIL,
+    BUYER2_EMAIL,
+    BUYER3_EMAIL,
+    DEFAULT_PASSWORD,
+    SELLER1_EMAIL,
+    SELLER2_EMAIL,
+)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -27,42 +35,42 @@ class TestOrderList:
             client,
             [
                 {
-                    'email': 'seller1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': SELLER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Seller1',
                     'role': 'seller',
                 },
                 {
-                    'email': 'seller2@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': SELLER2_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Seller2',
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer1',
                     'role': 'buyer',
                 },
                 {
-                    'email': 'buyer2@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER2_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer2',
                     'role': 'buyer',
                 },
                 {
-                    'email': 'buyer3@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER3_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer3',
                     'role': 'buyer',
                 },
             ],
         )
 
-        seller1_id = users['seller1@test.com']
-        seller2_id = users['seller2@test.com']
-        buyer1_id = users['buyer1@test.com']
-        buyer2_id = users['buyer2@test.com']
+        seller1_id = users[SELLER1_EMAIL]
+        seller2_id = users[SELLER2_EMAIL]
+        buyer1_id = users[BUYER1_EMAIL]
+        buyer2_id = users[BUYER2_EMAIL]
 
         # And products exist
         products = await given_products_exist(
@@ -133,7 +141,7 @@ class TestOrderList:
         )
 
         # When buyer requests their orders
-        await given_logged_in_as_buyer(client, 'buyer1@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, BUYER1_EMAIL, DEFAULT_PASSWORD)
         response = await client.get('/order/my-orders')
 
         # Then
@@ -175,29 +183,29 @@ class TestOrderList:
             client,
             [
                 {
-                    'email': 'seller1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': SELLER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Seller1',
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer1',
                     'role': 'buyer',
                 },
                 {
-                    'email': 'buyer2@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER2_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer2',
                     'role': 'buyer',
                 },
             ],
         )
 
-        seller1_id = users['seller1@test.com']
-        buyer1_id = users['buyer1@test.com']
-        buyer2_id = users['buyer2@test.com']
+        seller1_id = users[SELLER1_EMAIL]
+        buyer1_id = users[BUYER1_EMAIL]
+        buyer2_id = users[BUYER2_EMAIL]
 
         # And products exist
         products = await given_products_exist(
@@ -246,7 +254,7 @@ class TestOrderList:
         )
 
         # When seller requests their orders
-        await given_logged_in_as_seller(client, 'seller1@test.com', 'P@ssw0rd')
+        await given_logged_in_as_seller(client, SELLER1_EMAIL, DEFAULT_PASSWORD)
         response = await client.get(f'/order/seller/{seller1_id}')
 
         # Then
@@ -288,18 +296,18 @@ class TestOrderList:
             client,
             [
                 {
-                    'email': 'buyer3@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER3_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer3',
                     'role': 'buyer',
                 },
             ],
         )
 
-        _ = users['buyer3@test.com']
+        _ = users[BUYER3_EMAIL]
 
         # When buyer requests their orders
-        await given_logged_in_as_buyer(client, 'buyer3@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, BUYER3_EMAIL, DEFAULT_PASSWORD)
         response = await client.get('/order/my-orders')
 
         # Then
@@ -315,14 +323,14 @@ class TestOrderList:
             client,
             [
                 {
-                    'email': 'seller1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': SELLER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Seller1',
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer1',
                     'role': 'buyer',
                 },
@@ -373,7 +381,7 @@ class TestOrderList:
         )
 
         # When buyer requests orders filtered by 'paid' status
-        await given_logged_in_as_buyer(client, 'buyer1@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, BUYER1_EMAIL, DEFAULT_PASSWORD)
         response = await client.get('/order/my-orders?order_status=paid')
 
         # Then
@@ -394,14 +402,14 @@ class TestOrderList:
             client,
             [
                 {
-                    'email': 'seller1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': SELLER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Seller1',
                     'role': 'seller',
                 },
                 {
-                    'email': 'buyer1@test.com',
-                    'password': 'P@ssw0rd',
+                    'email': BUYER1_EMAIL,
+                    'password': DEFAULT_PASSWORD,
                     'name': 'Test Buyer1',
                     'role': 'buyer',
                 },
@@ -452,7 +460,7 @@ class TestOrderList:
         )
 
         # When buyer requests orders filtered by 'pending_payment' status
-        await given_logged_in_as_buyer(client, 'buyer1@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, BUYER1_EMAIL, DEFAULT_PASSWORD)
         response = await client.get('/order/my-orders?order_status=pending_payment')
 
         # Then

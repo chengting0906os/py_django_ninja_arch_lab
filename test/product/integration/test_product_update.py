@@ -9,6 +9,7 @@ from test.product.integration.util import (
     given_product_exists,
     then_error_message_contains,
 )
+from test.util_constant import DEFAULT_PASSWORD, SELLER1_EMAIL, SELLER2_EMAIL, TEST_SELLER_EMAIL
 
 
 @pytest.mark.django_db(transaction=True)
@@ -17,7 +18,7 @@ class TestProductUpdate:
     async def test_deactivate_product(self, client: TestAsyncClient):
         """Test deactivating a product."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_id = await given_product_exists(
             client, 'iPhone 18', 'Latest Apple smartphone', 1500, True
         )
@@ -44,7 +45,7 @@ class TestProductUpdate:
     async def test_update_product_price(self, client: TestAsyncClient):
         """Test updating product price."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_id = await given_product_exists(
             client, 'iPhone 18', 'Latest Apple smartphone', 1500, True
         )
@@ -69,7 +70,7 @@ class TestProductUpdate:
     async def test_update_product_with_negative_price_fails(self, client: TestAsyncClient):
         """Test updating product with negative price should fail."""
         # Given
-        await given_logged_in_seller(client, 'seller@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, TEST_SELLER_EMAIL, DEFAULT_PASSWORD)
         product_id = await given_product_exists(
             client, 'iPhone 18', 'Latest Apple smartphone', 1500, True
         )
@@ -91,13 +92,13 @@ class TestProductUpdate:
     async def test_update_other_sellers_product_fails(self, client: TestAsyncClient):
         """Test that sellers cannot update other sellers' products."""
         # Given
-        await given_logged_in_seller(client, 'seller1@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, SELLER1_EMAIL, DEFAULT_PASSWORD)
         product_id = await given_product_exists(
             client, 'iPhone 18', 'Latest Apple smartphone', 1500, True
         )
 
         # Login as different seller
-        await given_logged_in_seller(client, 'seller2@test.com', 'P@ssw0rd')
+        await given_logged_in_seller(client, SELLER2_EMAIL, DEFAULT_PASSWORD)
 
         # When
         update_data = {

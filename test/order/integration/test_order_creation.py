@@ -12,6 +12,7 @@ from test.order.integration.util import (
     then_product_status_should_be,
     when_create_order,
 )
+from test.util_constant import DEFAULT_PASSWORD, TEST_BUYER_EMAIL, TEST_PRODUCT_NAME
 
 
 @pytest.mark.django_db(transaction=True)
@@ -21,9 +22,9 @@ class TestOrderCreation:
         """Test creating order for available product successfully."""
         # Given
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'For order test', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, 'For order test', 1000, True, 'available'
         )
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # When
         response = await when_create_order(client, product_id)
@@ -37,9 +38,9 @@ class TestOrderCreation:
         """Test that creating order for reserved product should fail."""
         # Given
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Already reserved', 1000, True, 'reserved'
+            client, TEST_PRODUCT_NAME, 'Already reserved', 1000, True, 'reserved'
         )
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # When
         response = await when_create_order(client, product_id)
@@ -53,9 +54,9 @@ class TestOrderCreation:
         """Test that creating order for inactive product should fail."""
         # Given
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'Inactive product', 1000, False, 'available'
+            client, TEST_PRODUCT_NAME, 'Inactive product', 1000, False, 'available'
         )
-        await given_logged_in_as_buyer(client, 'buyer@test.com', 'P@ssw0rd')
+        await given_logged_in_as_buyer(client, TEST_BUYER_EMAIL, DEFAULT_PASSWORD)
 
         # When
         response = await when_create_order(client, product_id)
@@ -69,11 +70,11 @@ class TestOrderCreation:
         """Test that sellers cannot create orders."""
         # Given
         seller_id, product_id = await given_seller_with_product(
-            client, 'Test Product', 'For order test', 1000, True, 'available'
+            client, TEST_PRODUCT_NAME, 'For order test', 1000, True, 'available'
         )
         # Login as the seller (who created the product)
         # Email is 'seller_test_product@test.com' (spaces converted to underscores)
-        await given_logged_in_as_seller(client, 'seller_test_product@test.com', 'P@ssw0rd')
+        await given_logged_in_as_seller(client, 'seller_test_product@test.com', DEFAULT_PASSWORD)
 
         # When
         response = await when_create_order(client, product_id)
