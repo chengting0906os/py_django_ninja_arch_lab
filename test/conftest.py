@@ -16,14 +16,11 @@ load_dotenv(env_file)
 
 # Configure unique test database for each pytest worker
 worker_id = os.environ.get('PYTEST_XDIST_WORKER', '')
-testrun_uid = os.environ.get('PYTEST_XDIST_TESTRUNUID', '')
 
-if testrun_uid and worker_id:
-    test_db_suffix = f'{testrun_uid}_{worker_id}'
-elif worker_id:
+if worker_id:
     test_db_suffix = f'{worker_id}'
 else:
-    test_db_suffix = f'{os.getpid()}'
+    test_db_suffix = 'sequential_test'  # avoid pyrefly(unbound-name)
 
 os.environ.setdefault('TEST_DB_SUFFIX', test_db_suffix)
 
@@ -68,6 +65,7 @@ class SessionTestAsyncClient(TestAsyncClient):
                 except User.DoesNotExist:
                     return None
 
+            # Execute sync ORM query in separate thread
             with ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(get_user_sync, user_id)
                 user = future.result()
@@ -77,18 +75,6 @@ class SessionTestAsyncClient(TestAsyncClient):
             mock.user = AnonymousUser()
 
         return mock
-
-
-def pytest_configure(config):
-    """Run migrations before tests when using --reuse-db."""
-    from django.core.management import call_command
-
-    # Only run if using reuse-db
-    if config.getoption('--reuse-db', default=False):
-        try:
-            call_command('migrate', '--run-syncdb', verbosity=0)
-        except Exception:
-            pass  # First run might not have DB yet
 
 
 @pytest.fixture(scope='session')
@@ -103,8 +89,3 @@ def client(api_instance, db):
     """Test async client with API instance and database access."""
     client = SessionTestAsyncClient(api_instance)
     yield client
-    # Close database connections after each test
-    from django.db import connections
-
-    for conn in connections.all():
-        conn.close()
