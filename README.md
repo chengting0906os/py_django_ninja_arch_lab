@@ -17,9 +17,11 @@ src/
 ├─ driven_adapter/   # Outbound adapters implementing app interfaces
 │                    # (repositories, external APIs, message queues)
 │
-├─ driving_adapter/  # Legacy FastAPI inbound adapters (kept for reference during migration)
+├─ driving_adapter/  # Inbound adapters exposing app functionality
+│                    # (REST controllers, GraphQL resolvers, CLI commands)
 │
-└─ platform/         # Django platform: settings, session auth, logging, Ninja controllers
+└─ platform/         # Shared infrastructure concerns
+                     # (config, database setup, logging, DI container)controllers
 ```
 
 ---
@@ -61,12 +63,6 @@ src/domain/
   - As a buyer, I can view my orders
 
 Features are intentionally lightweight; focus on the architecture patterns.
-
-### Current Migration Status
-
-- ✅ Django project scaffolded under `src/platform`
-- ✅ User module running through Django Ninja Extra with session authentication
-- 🔄 Product & Order controllers pending migration from FastAPI
 
 ---
 

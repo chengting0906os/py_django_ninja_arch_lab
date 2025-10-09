@@ -19,18 +19,18 @@ Our services follow a hexagonal architecture:
 - **Driving adapters** expose inbound ports (Django views/controllers and django-ninja endpoints where applicable); request/response schemas (Pydantic) are used in API layers when helpful.
 - **Platform** centralizes cross-cutting concerns such as configuration, migrations, logging, and notification stubs.
 
-Refer to [TECH_STACK.md](TECH_STACK.md#hexagonal-architecture--layer-responsibilities) for a deeper breakdown.
+Refer to [TECH_STACK.md](TECH_STACK.md#hexagonal-architecture-layers) for a deeper breakdown.
 
 # Must-Do Rules
 
 - **Imports**: Always at top of file, never inside functions.
 - **Async**: Prefer `async` for I/O-bound work (network, external services).
 - **Function Parameters**: Use keyword-first style for clarity (`def action(*, order_id: int)`).
-- **Dependency Inversion**: High-level modules depend on abstractions, not low-level implementations.
+- **Dependency Inversion**: High-level modules depend on abstractions, not low-level implementations. See [di.py](../src/platform/config/di.py) for DI configuration.
 - **Fail Fast**: Validate inputs and state early; raise domain exceptions immediately.
 - **Open/Closed**: Open for extension, closed for modification.
 - **Single Responsibility**: Each function, class, and module has one well-defined responsibility.
-- **Logging**: Apply `Logger.io` decorators thoughtfully across layers to trace ingress/egress or critical operations.
+- **Logging**: Apply `@Logger.io` decorators to public methods to trace ingress/egress operations.
 - **Pydantic Schemas**: All `BaseModel` schemas MUST include a `Config` class with `from_attributes = True` and `json_schema_extra` containing example data for API documentation (OpenAPI/Swagger).
 
 # Core Development Philosophy

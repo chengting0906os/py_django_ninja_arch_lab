@@ -24,9 +24,10 @@ This project targets **Python 3.13** and relies on the `uv` toolchain for managi
 
 - **Driven Adapter (`src/driven_adapter`)** — outbound ports (DB, auth, external services)
 
-  - Map persistence with SQLAlchemy models in `model/`; implement repository interfaces in `repo/`.
-  - Keep database-specific queries and authentication helpers (for example, Passlib) isolated here.
-  - Avoid leaking SQLAlchemy models or infrastructure types outside this layer.
+  - Implement repository interfaces defined in `src/app/interface/`.
+  - Use Django ORM for database operations; keep queries isolated in repository implementations.
+  - Authentication helpers and external service integrations belong here.
+  - Avoid leaking infrastructure details or ORM models outside this layer.
 
 - **Driving Adapter (`src/driving_adapter`)** — inbound ports (HTTP/API)
 
@@ -35,9 +36,12 @@ This project targets **Python 3.13** and relies on the `uv` toolchain for managi
   - Apply logging decorators (e.g., `Logger.io`) at entry/exit points where visibility is valuable.
 
 - **Platform (`src/platform`)**
-  - Holds cross-cutting infrastructure: environment-driven configuration (settings), configuration and utilities, database session factories and connection utilities, logging configuration, notification stubs, and shared exception types.
-  - `src/platform/settings.py` defines environment-driven settings; migration and database connection settings are configured here.
-  - Utility modules (logging, notification, constants) should remain framework-agnostic and reusable by multiple adapters.
+  - Holds cross-cutting infrastructure: Django configuration, database models, migrations, logging, and shared utilities.
+  - `src/platform/config/settings.py` defines Django settings; database and CORS configuration are here.
+  - `src/platform/models/` contains Django ORM models (User, Product, Order).
+  - `src/platform/migrations/` holds Django database migrations.
+  - Dependency injection configured in `src/platform/config/di.py`.
+  - Utility modules (logging, exception handling) should remain framework-agnostic where possible.
 
 Refer back to `pyproject.toml` for full version constraints and dependency groups.
 
