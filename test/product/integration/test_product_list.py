@@ -111,7 +111,7 @@ class TestProductList:
             # Update status if not available
             if status != 'available':
                 from asgiref.sync import sync_to_async
-                from src.driven_adapter.model.product_model import ProductModel
+                from src.platform.models.product_model import ProductModel
 
                 product_id = response.json()['id']
                 product = await sync_to_async(ProductModel.objects.get)(id=product_id)

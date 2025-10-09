@@ -10,7 +10,7 @@ from src.app.interface.i_product_repo import IProductRepo
 from src.domain.entity.product_entity import Product, ProductStatus
 from src.domain.entity.user_entity import User
 from src.domain.enum.user_role_enum import UserRole
-from src.driven_adapter.model.product_model import ProductModel
+from src.platform.models.product_model import ProductModel
 from src.platform.exception.exceptions import DomainError
 from src.platform.logging.loguru_io import Logger
 

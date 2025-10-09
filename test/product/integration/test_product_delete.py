@@ -81,7 +81,7 @@ class TestProductDelete:
     ) -> int:
         """Create a reserved product and return its ID."""
         from asgiref.sync import sync_to_async
-        from src.driven_adapter.model.product_model import ProductModel
+        from src.platform.models.product_model import ProductModel
 
         product_id = await given_product_exists(client, name, description, price, True)
 
@@ -97,7 +97,7 @@ class TestProductDelete:
     ) -> int:
         """Create a sold product and return its ID."""
         from asgiref.sync import sync_to_async
-        from src.driven_adapter.model.product_model import ProductModel
+        from src.platform.models.product_model import ProductModel
 
         product_id = await given_product_exists(client, name, description, price, True)
 

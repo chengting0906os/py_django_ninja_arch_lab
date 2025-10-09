@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from src.app.interface.i_order_repo import IOrderRepo
 from src.domain.entity.order_entity import Order, OrderStatus
-from src.driven_adapter.model.order_model import OrderModel
+from src.platform.models.order_model import OrderModel
 from src.platform.exception.exceptions import DomainError, ForbiddenError, NotFoundError
 from src.platform.logging.loguru_io import Logger
 

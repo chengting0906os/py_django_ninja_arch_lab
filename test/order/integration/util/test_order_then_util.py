@@ -19,7 +19,7 @@ def then_order_created_successfully(response, expected_price: int):
 
 async def then_product_status_should_be(product_id: int, expected_status: str):
     """Assert product status matches expected value."""
-    from src.driven_adapter.model.product_model import ProductModel
+    from src.platform.models.product_model import ProductModel
 
     product = await sync_to_async(ProductModel.objects.get)(id=product_id)
     assert product.status == expected_status, (

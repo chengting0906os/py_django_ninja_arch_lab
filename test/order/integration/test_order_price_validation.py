@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from ninja_extra.testing import TestAsyncClient
 import pytest
 
-from src.driven_adapter.model.product_model import ProductModel
+from src.platform.models.product_model import ProductModel
 from test.order.integration.util import (
     given_logged_in_as_buyer,
     given_seller_with_product,

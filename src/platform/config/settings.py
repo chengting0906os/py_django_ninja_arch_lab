@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'ninja_extra',
-    'src.driven_adapter',
+    'src.platform.models',
 ]
 
 MIDDLEWARE = [
@@ -83,8 +83,13 @@ STATICFILES_DIRS: list[Path] = [BASE_DIR / 'static']
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# app setting
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'driven_adapter.User'
+AUTH_USER_MODEL = 'models.User'
+
+MIGRATION_MODULES = {
+    'models': 'src.platform.migrations',
+}
 
 
 NINJA_EXTRA = {

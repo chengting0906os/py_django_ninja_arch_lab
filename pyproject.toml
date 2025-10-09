@@ -118,6 +118,8 @@ reportInvalidTypeForm = false
 search-path = [".", "test", ".venv/lib/python3.13/site-packages"]
 site-package-path = [".venv/lib/python3.13/site-packages"]
 project-includes = ["src", "test"]
+project-excludes = ["src/platform/migrations*"]
+
 
 [tool.pyrefly.errors]
 missing-attribute = false

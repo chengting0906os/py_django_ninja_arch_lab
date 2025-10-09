@@ -6,8 +6,8 @@ import re
 from asgiref.sync import sync_to_async
 from ninja_extra.testing import TestAsyncClient
 
-from src.driven_adapter.model.order_model import OrderModel
-from src.driven_adapter.model.product_model import ProductModel
+from src.platform.models.order_model import OrderModel
+from src.platform.models.product_model import ProductModel
 from src.platform.constant.route_constant import AUTH_LOGIN, PRODUCT_CREATE, USER_CREATE
 from test.util_constant import DEFAULT_PASSWORD
 
@@ -53,7 +53,7 @@ async def given_seller_with_product(
 
     # Update status if not available
     if status != 'available':
-        from src.driven_adapter.model.product_model import ProductModel
+        from src.platform.models.product_model import ProductModel
 
         product = await sync_to_async(ProductModel.objects.get)(id=product_id)
         product.status = status
@@ -103,7 +103,7 @@ async def given_logged_in_as_seller(client: TestAsyncClient, email: str, passwor
 
 async def given_users_exist(client: TestAsyncClient, users_data: list[dict]) -> dict[str, int]:
     """Create multiple users and return a mapping of email to user_id."""
-    from src.driven_adapter.model.user_model import User as UserModel
+    from src.platform.models.user_model import User as UserModel
 
     user_ids = {}
     for user in users_data:
