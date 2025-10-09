@@ -1,50 +1,25 @@
 # Database migrations
-ALEMBIC_CONFIG = src/platform/alembic/alembic.ini
+.PHONY: makemigrations mm
+makemigrations mm:
+	@echo "Creating Django migrations..."
+	@uv run python manage.py makemigrations
 
-.PHONY: migrate-up mu
-migrate-up mu:
-	@echo "Running migrations..."
-	@uv run alembic -c $(ALEMBIC_CONFIG) upgrade head
+.PHONY: migrate m
+migrate m:
+	@echo "Running Django migrations..."
+	@uv run python manage.py migrate
 
-.PHONY: migrate-down md
-migrate-down md:
-	@echo "Rolling back one migration..."
-	@uv run alembic -c $(ALEMBIC_CONFIG) downgrade -1
-
-.PHONY: migrate-new mn
-migrate-new mn:
-	@if [ -z "$(MSG)" ]; then \
-		echo "Error: Migration message required"; \
-		echo "Usage: make migrate-new MSG='your message'"; \
-		exit 1; \
-	fi
-	@echo "Creating migration: $(MSG)"
-	@uv run alembic -c $(ALEMBIC_CONFIG) revision --autogenerate -m "$(MSG)"
-
-.PHONY: migrate-history mh
-migrate-history mh:
-	@uv run alembic -c $(ALEMBIC_CONFIG) history
-
-.PHONY: migrate-current mc
-migrate-current mc:
-	@uv run alembic -c $(ALEMBIC_CONFIG) current
+.PHONY: migrate-show ms
+migrate-show ms:
+	@echo "Showing migration status..."
+	@uv run python manage.py showmigrations
 
 # Testing
 .PHONY: test t mt
 test t mt:
 	@uv run pytest test/ -v -n 15
 
-.PHONY: test-serial ts
-test-serial ts:
-	@uv run pytest test/ -v
 
-.PHONY: test-api
-test-api:
-	@uv run pytest test/test_user_api_async.py -v
-
-.PHONY: test-bdd tbdd
-test-bdd tbdd:
-	@uv run pytest test/features/ -v
 
 # Linting and formatting
 .PHONY: lint
@@ -92,22 +67,18 @@ db-shell psql:
 help:
 	@echo "Available commands:"
 	@echo "  Database Migrations:"
-	@echo "    make migrate-up (mu)     - Run all pending migrations"
-	@echo "    make migrate-down (md)   - Rollback one migration"
-	@echo "    make migrate-new (mn) MSG='message' - Create new migration"
-	@echo "    make migrate-history (mh) - Show migration history"
-	@echo "    make migrate-current (mc) - Show current migration"
+	@echo "    make makemigrations (mm) - Create new Django migrations"
+	@echo "    make migrate (m)         - Run Django migrations"
+	@echo "    make migrate-show (ms)   - Show migration status"
 	@echo ""
 	@echo "  Testing:"
-	@echo "    make test (t)            - Run all test"
-	@echo "    make test-api            - Run API test"
-	@echo "    make test-bdd (tbdd)     - Run BDD test"
+	@echo "    make test (t)            - Run all tests"
 	@echo ""
 	@echo "  Development:"
 	@echo "    make run                 - Run development server"
 	@echo "    make lint                - Check code style"
 	@echo "    make format              - Format code"
-	@echo "    make typecheck           - Run type checking"
+	@echo "    make pyre                - Run type checking"
 	@echo "    make clean               - Remove cache files"
 	@echo ""
 	@echo "  Docker & Database:"
